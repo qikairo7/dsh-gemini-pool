@@ -54,7 +54,7 @@
 - 账号池整体耗尽时报 `EXHAUSTED` 而非 `AUTH`，不再误导用户重新登录
 - 生图路径与流路径统一使用同一配额/限流判定（收紧后的 `isQuotaOrRateLimitError`），400 类错误文本中偶然出现的 "quota" 字样不再误伤账号
 - 流式输出中途遭遇 429 时同样标记冷却（不再换号续流，保持响应完整性）
-- 生图成功路径补漏 `await`；`files` 字段修正（README.zh.md → README.en.md）
+- 生图成功路径补漏 `await`；修正 `package.json` 的 `files` 字段：把已改名的 README.zh.md 更正为 README.en.md
 
 ### Added
 - GitHub Actions：push / PR 自动跑 `npm run check`（零依赖，无 install）
