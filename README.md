@@ -1,17 +1,10 @@
 <div align="center">
 
-<a href="https://github.com/qikairo7/dsh-gemini-pool">
-  <picture>
-    <img src="./assets/images/screenshots/settings-1.png" alt="dsh-gemini-pool settings page" width="100%">
-  </picture>
-</a>
-
 ### dsh-gemini-pool
 
-Multi-account Google Gemini / Antigravity provider for
-[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
+**把多个 Google Gemini 账号，变成一个会自我修复的模型池**
 
-English | [简体中文](./README.zh.md)
+[English](./README.en.md) · 简体中文
 
 <a href="https://github.com/qikairo7/dsh-gemini-pool/releases"><img src="https://img.shields.io/github/v/release/qikairo7/dsh-gemini-pool?color=369eff&labelColor=black&logo=github&style=flat-square" alt="release"></a>
 <a href="https://github.com/qikairo7/dsh-gemini-pool/stargazers"><img src="https://img.shields.io/github/stars/qikairo7/dsh-gemini-pool?color=ffcb47&labelColor=black&style=flat-square" alt="stars"></a>
@@ -19,75 +12,65 @@ English | [简体中文](./README.zh.md)
 <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-white?labelColor=black&style=flat-square" alt="license"></a>
 <a href="https://github.com/qikairo7/dsh-gemini-pool/commits/master"><img src="https://img.shields.io/github/last-commit/qikairo7/dsh-gemini-pool?color=c4f042&labelColor=black&style=flat-square" alt="last commit"></a>
 
-<a href="https://github.com/qikairo7/dsh-gemini-pool">GitHub</a> ·
-<a href="https://github.com/qikairo7/dsh-gemini-pool/issues">Issues</a> ·
-<a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a> ·
-<a href="https://github.com/LiZhenNet/dsh-antigravity">Upstream</a>
+[GitHub](https://github.com/qikairo7/dsh-gemini-pool) ·
+[Issues](https://github.com/qikairo7/dsh-gemini-pool/issues) ·
+[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) ·
+[上游项目](https://github.com/LiZhenNet/dsh-antigravity)
 
 </div>
 
-***
+---
 
-<details>
-  <summary><kbd>Table of Contents</kbd></summary>
+## ✨ 这是什么
 
-- [Why dsh-gemini-pool](#why-dsh-gemini-pool)
-- [Installation](#install-into-dsh-web)
-- [Multi-Account Pool & Login](#multi-account-pool--login)
-- [Cooldown & Recovery](#cooldown--recovery)
-- [Models](#models)
-- [License](#license)
-- [Credits](#credits)
+dsh-gemini-pool 是 [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness) 的模型提供插件。它把你手里的多个 Google 账号组成一个统一的账号池——额度自动均衡、429 自动切换、坏号自动冷却与探活恢复。你在对话里永远不会看到「额度用尽，请稍后再试」。
 
-</details>
+打开设置页，每个账号一张卡片，每周与 5 小时额度实时可见；池子背后，调度、切换、冷却、探活全部自动完成。
 
-<br>
+<p align="center">
+  <img src="./assets/images/screenshots/settings-1.png" alt="dsh-gemini-pool 设置页" width="78%">
+</p>
 
-## Why dsh-gemini-pool
+---
 
-dsh-gemini-pool turns a single Antigravity OAuth login into a self-healing
-account pool: every Google account you add becomes a scheduling candidate with
-its own live quota bars, and rate-limited accounts rotate, cool down and
-recover without a single visible error in your session.
+## 🆚 为什么需要它
 
-| Capability | Single account | dsh-gemini-pool |
-|---|---|---|
-| **429 / rate limit handling** | ❌ requests fail until the window resets | ✅ seamless failover + exponential cooldown |
-| **Multiple Google accounts** | ❌ one login at a time | ✅ smart balancing across the whole pool |
-| **Quota visibility** | ❌ opaque | ✅ per-account weekly + 5h live bars |
-| **Unhealthy accounts** | ❌ keep hitting the same dead account | ✅ auto-disable, background probe, one-click re-enable |
-| **Frontend image generation** | ❌ | ✅ `antigravity_image_generate` tool |
-| **Bilingual settings UI** | — | ✅ English / 简体中文, light & dark themes |
+| | 单账号直连 | dsh-gemini-pool |
+|---|:---:|:---:|
+| 429 / 限频 | ❌ 报错，干等窗口重置 | ✅ 无感切换到健康账号 |
+| 多账号管理 | ❌ 手动换号重登 | ✅ 一键加号，全池调度 |
+| 额度情况 | ❌ 黑盒 | ✅ 每账号实时额度条 |
+| 坏账号 | ❌ 反复撞同一个死号 | ✅ 自动禁用 + 探活复活 |
+| 前端生图 | ❌ 手动切模型 | ✅ `antigravity_image_generate` 自动出图 |
+| 界面语言 | — | ✅ 中文 / English，明暗双主题 |
 
-> Unofficial integration. This project is not affiliated with or endorsed by
-> Google. Use it only with accounts and services you are authorized to access.
+---
 
-## Install into DSH Web
+## 🚀 快速开始
 
-### Option 1: Direct from GitHub
+**1. 安装插件**
 
 ```sh
 dsh plugin --profile web add github:qikairo7/dsh-gemini-pool
 ```
 
-### Option 2: From Local Release Tarball
+**2. 登录 Google 账号**
+
+打开 DSH 设置 → **Antigravity** → 点击「＋ 添加 Google 账号」完成授权。想加几个加几个。
+
+**3. 完成**
+
+模型选择器里勾选要用的模型，直接开聊。额度刷新、账号调度全部自动。
+
+<details>
+<summary><kbd>离线安装 / 手动安装</kbd></summary>
 
 ```sh
 npm run pack:dist
 dsh plugin --profile web add ./dist/dsh-gemini-pool-0.4.0.tgz
 ```
 
-The package declares a DSH bundle patch, so installation automatically mounts
-the host plugin and browser settings page.
-
-If your DSH version does not support `dsh plugin add`, copy the package into
-the Web profile manually:
-
-```sh
-cp -R dsh-gemini-pool "$DSH_HOME/profiles/web/node_modules/"
-```
-
-Then add the plugin to the profile `cordis.patch.yml`:
+若 DSH 版本不支持 `dsh plugin add`，手动复制包到 `$DSH_HOME/profiles/web/node_modules/`，并在 `cordis.patch.yml` 中添加：
 
 ```yaml
 - insert:
@@ -95,86 +78,59 @@ Then add the plugin to the profile `cordis.patch.yml`:
       name: dsh-gemini-pool
 ```
 
-Restart DSH:
+</details>
 
-```sh
-dsh web
-```
+---
 
-## Multi-Account Pool & Login
+## 💧 账号池与调度
 
-Open **Settings > Antigravity** to manage Google Gemini accounts:
+三种调度策略，设置页一键切换：
 
-- **Smart Balancing**: Automatically selects the account with the highest remaining quota.
-- **Seamless 429 Failover**: Automatically retries using backup accounts when rate-limited (`RESOURCE_EXHAUSTED`), eliminating client errors.
-- **Backward Compatible**: Automatically migrates existing single `antigravity-oauth.json` into Account 1.
-- **Frontend Image Generation Tool**: Integrates `antigravity_image_generate` to automatically generate web illustrations using `gemini-3.1-flash-image` into `./assets/images`.
+- **智能均衡（推荐）** — 自动挑选剩余额度最健康的账号
+- **主备切换** — 固定主账号，额度耗尽自动切备用
+- **手动指定** — 锁定单一账号，用于调试或专跑
 
-Click **「＋ Add Google Account」** to append additional accounts into the pool.
+凭证存储在 `$DSH_HOME/storages/antigravity-pool-accounts.json`，包含 access/refresh token，请妥善保管。旧版单账号凭证升级时自动迁移，无需重新登录。
 
-Credentials are stored at:
+---
 
-```text
-$DSH_HOME/storages/antigravity-pool-accounts.json
-```
+## 🧊 冷却与自愈
 
-Keep that file private. It contains access and refresh tokens.
+账号遇到 429 后自动进入指数退避冷却，连续失败达阈值则禁用并转入后台探活，额度恢复即自动回归——全程无需人工干预。
 
-## Cooldown & Recovery
+| 参数 | 默认值 | 说明 |
+|---|---|---|
+| `cooldownMs` | 1 分钟 | 首次冷却时长，之后逐次翻倍 |
+| `cooldownMaxMs` | 1 小时 | 冷却时长上限 |
+| `disableThreshold` | 5 次 | 连续失败达到即禁用该账号 |
+| `probeIntervalMs` | 5 分钟 | 后台探活间隔，恢复即自动启用 |
 
-When an account encounters 429 (rate limits or individual quota exhausted), it enters an exponential cooldown state machine without blocking the pool:
+被禁用的账号在设置页显示红色标签，可点「重新启用」一键恢复。以上参数均可在设置页「冷却与恢复」折叠区调整。
 
-| Parameter | Default | Description |
-| --- | --- | --- |
-| `cooldownMs` | `60000` (1 min) | Initial cooldown base time |
-| `cooldownMaxMs` | `3600000` (1 hr) | Maximum cooldown duration cap |
-| `disableThreshold` | `5` | Consecutively failed attempts before account status becomes `disabled` |
-| `probeIntervalMs` | `300000` (5 min) | Background probe interval to test disabled accounts and automatically restore them |
+---
 
-Accounts marked as `disabled` are removed from scheduling candidates and can be manually re-enabled in Settings with the **「Re-enable」** button, or restored automatically by the background probe once quota recovers.
+## 🤖 模型一览
 
-## Models
-
-After login, select the **Antigravity** provider in DSH's model picker. Use the
-model selector in **Settings > Antigravity** to enable or disable individual
-models (enabled models are prioritized at the top of the list) — the live remaining quota percentage is shown next to each one.
+设置页勾选即用，已勾选的模型自动置顶，每个模型实时显示池内最高可用额度。
 
 <p align="center">
-  <img src="./assets/images/screenshots/settings-2.png" alt="Dispatch strategy and model selector" width="52%" />
-  <img src="./assets/images/screenshots/settings-3.png" alt="Image generation defaults" width="42%" />
+  <img src="./assets/images/screenshots/settings-2.png" alt="调度策略与模型选择器" width="48%">
+  <img src="./assets/images/screenshots/settings-3.png" alt="默认生图配置" width="40%">
 </p>
 
-Registered model IDs:
+| 模型 | 额度池 |
+|---|---|
+| Gemini 3.8 / 3.7 / 3.6 / 3.5 Flash | Gemini |
+| Gemini 3.1 Pro · Gemini 3.1 Flash Image（生图） | Gemini |
+| Gemini 3 Flash · Gemini 2.5 Pro / Flash | Gemini |
+| Claude Opus 4.6 · Claude Sonnet 4.6 · GPT-OSS 120B | Claude & GPT |
 
-| Model ID | Name | Quota pool |
-|---|---|---|
-| `gemini-3.8-flash` | Gemini 3.8 Flash | Gemini |
-| `gemini-3.7-flash` | Gemini 3.7 Flash | Gemini |
-| `gemini-3.6-flash` | Gemini 3.6 Flash | Gemini |
-| `gemini-3.5-flash` | Gemini 3.5 Flash | Gemini |
-| `gemini-3.1-pro` | Gemini 3.1 Pro | Gemini |
-| `gemini-3.1-flash-image` | Gemini 3.1 Flash Image | Gemini |
-| `gemini-3-flash` | Gemini 3 Flash | Gemini |
-| `gemini-2.5-pro` | Gemini 2.5 Pro | Gemini |
-| `gemini-2.5-flash` | Gemini 2.5 Flash | Gemini |
-| `claude-opus-4-6` | Claude Opus 4.6 | Claude & GPT (3P) |
-| `claude-sonnet-4-6` | Claude Sonnet 4.6 | Claude & GPT (3P) |
-| `gpt-oss-120b` | GPT-OSS 120B | Claude & GPT (3P) |
+同一额度池内共享每周与 5 小时额度；额度按 token 成本比例消耗，越重的模型烧得越快。
 
-Models in the same quota pool share a weekly limit and a 5-hour limit. Quota is
-consumed proportionally to token cost, so heavier models (e.g. Claude Opus)
-drain the pool faster than lighter ones.
+---
 
-The plugin resolves these public IDs to runtime model IDs using the live
-`fetchAvailableModels` catalog when available, with static routing fallbacks.
+## 📄 许可证与致谢
 
-## License
+[MIT](./LICENSE)。非官方集成，与 Google 无关；请仅在您有权使用的账号上使用。
 
-MIT
-
-## Credits
-
-Built on [dsh-antigravity](https://github.com/LiZhenNet/dsh-antigravity) by
-[@LiZhenNet](https://github.com/LiZhenNet), with community contributions from
-[@Lukeknow0](https://github.com/Lukeknow0), [@miuzel](https://github.com/miuzel),
-[@grloper](https://github.com/grloper) and [@sereineele](https://github.com/sereineele).
+基于 [@LiZhenNet](https://github.com/LiZhenNet) 的 [dsh-antigravity](https://github.com/LiZhenNet/dsh-antigravity) 构建，感谢 [@Lukeknow0](https://github.com/Lukeknow0)、[@miuzel](https://github.com/miuzel)、[@grloper](https://github.com/grloper)、[@sereineele](https://github.com/sereineele) 的社区贡献。
