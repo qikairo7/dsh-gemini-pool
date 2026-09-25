@@ -1,14 +1,14 @@
-# antigravity-pool
+# dsh-gemini-pool
 
 <p align="center">
-  <img src="./assets/images/screenshots/settings-1.png" alt="Antigravity Pool settings page" width="100%" />
+  <img src="./assets/images/screenshots/settings-1.png" alt="Gemini Pool settings page" width="100%" />
 </p>
 
 English | [简体中文](./README.zh.md)
 
-Multi-account Google Antigravity / Cloud Code Assist provider for
+Multi-account Google Gemini / Antigravity / Cloud Code Assist provider for
 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) — smart
-quota balancing, seamless 429 failover, frontend image generation, and a
+quota balancing, exponential cooldown with auto-failover, background health probing, frontend image generation, and a
 bilingual card-based settings UI with light/dark theme support.
 
 This is a DSH Web plugin. It registers a DSH `LlmAdapter`
@@ -23,14 +23,14 @@ talks to the Cloud Code Assist streaming API directly, and provides full bilingu
 ### Option 1: Direct from GitHub
 
 ```sh
-dsh plugin --profile web add github:qikairo7/antigravity-pool
+dsh plugin --profile web add github:qikairo7/dsh-gemini-pool
 ```
 
 ### Option 2: From Local Release Tarball
 
 ```sh
 npm run pack:dist
-dsh plugin --profile web add ./dist/antigravity-pool-0.3.0.tgz
+dsh plugin --profile web add ./dist/dsh-gemini-pool-0.4.0.tgz
 ```
 
 The package declares a DSH bundle patch, so installation automatically mounts
@@ -40,15 +40,15 @@ If your DSH version does not support `dsh plugin add`, copy the package into
 the Web profile manually:
 
 ```sh
-cp -R antigravity-pool "$DSH_HOME/profiles/web/node_modules/"
+cp -R dsh-gemini-pool "$DSH_HOME/profiles/web/node_modules/"
 ```
 
 Then add the plugin to the profile `cordis.patch.yml`:
 
 ```yaml
 - insert:
-    - id: antigravity-pool
-      name: antigravity-pool
+    - id: dsh-gemini-pool
+      name: dsh-gemini-pool
 ```
 
 Restart DSH:
@@ -59,7 +59,7 @@ dsh web
 
 ## Multi-Account Pool & Login
 
-Open **Settings > Antigravity** to manage Google Antigravity accounts:
+Open **Settings > Antigravity** to manage Google Gemini accounts:
 
 - **Smart Balancing**: Automatically selects the account with the highest remaining quota.
 - **Seamless 429 Failover**: Automatically retries using backup accounts when rate-limited (`RESOURCE_EXHAUSTED`), eliminating client errors.
@@ -75,6 +75,19 @@ $DSH_HOME/storages/antigravity-pool-accounts.json
 ```
 
 Keep that file private. It contains access and refresh tokens.
+
+## Cooldown & Recovery
+
+When an account encounters 429 (rate limits or individual quota exhausted), it enters an exponential cooldown state machine without blocking the pool:
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `cooldownMs` | `60000` (1 min) | Initial cooldown base time |
+| `cooldownMaxMs` | `3600000` (1 hr) | Maximum cooldown duration cap |
+| `disableThreshold` | `5` | Consecutively failed attempts before account status becomes `disabled` |
+| `probeIntervalMs` | `300000` (5 min) | Background probe interval to test disabled accounts and automatically restore them |
+
+Accounts marked as `disabled` are removed from scheduling candidates and can be manually re-enabled in Settings with the **「Re-enable」** button, or restored automatically by the background probe once quota recovers.
 
 ## Models
 
