@@ -1,6 +1,6 @@
 {
   "name": "dsh-gemini-pool",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Multi-account Google Gemini / Antigravity / Cloud Code Assist provider for DeepSeek Harness",
   "type": "module",
   "main": "lib/index.js",

@@ -2,6 +2,25 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## v0.5.0 — 2026-09-25
+
+### Changed
+- **探活恢复改为递减信任制**：后台探活成功后账号重新启用，但 `failureCount` 只递减 1（新 `recordProbeSuccess()`）——一次探活成功不再把真实失败史一笔勾销，账号需连续多次探活成功才能完全重获信任；设置页手动「重新启用」仍为全重置语义
+
+### Security / Hardening
+- 生图产物落盘前校验大小（上限 20 MiB），拒绝无界 base64 写盘
+- 设置页 Web API 请求体上限 2 MiB，超限拒绝
+- 账号池加载：结构性损坏（缺 `id` / `accessToken`）立即报错并携带坏值，不再静默吞掉坏条目
+- 设置页表单：冷却参数未配置时显示为空，不再用硬编码默认值伪装成"已配置"
+- 可重试状态码收敛为 `RETRYABLE_STATUSES` / `PROBE_RETRYABLE_STATUSES` 两个单一常量（原先三处独立硬编码数组）
+
+### Added
+- 3 项探活恢复行为测试（递减信任 / 不穿透零下限 / 手动解禁全重置）
+
+### Internal
+- 诊断单例显式化：`lib/diagnostics.js`（`createDiagnostics()` 工厂 + 共享实例），为后续模块拆分铺路
+- 模块拆分持续推进：`lib/models.js`、`lib/text-and-format.js` 已剥离（行为零变化，导出面 32 不变）
+
 ## v0.4.1 — 2026-09-25
 
 ### Fixed
