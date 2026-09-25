@@ -1,0 +1,75 @@
+{
+  "name": "antigravity-pool",
+  "version": "0.3.0",
+  "description": "Multi-account Google Antigravity / Cloud Code Assist provider for DeepSeek Harness",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-locale"
+      ],
+      "platform": "web"
+    }
+  },
+  "files": [
+    "lib",
+    "bin",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "LICENSE",
+    "assets"
+  ],
+  "bin": {
+    "antigravity-login": "bin/antigravity-login.mjs"
+  },
+  "scripts": {
+    "check": "node --check lib/index.js && node --check lib/text.js && node --check lib/client.js && node --check lib/pool.js && node --check lib/image-tool.js && node --check bin/antigravity-login.mjs && node --test",
+    "pack:dist": "mkdir -p dist && npm pack --pack-destination dist"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "antigravity",
+    "google",
+    "cloud-code-assist",
+    "oauth",
+    "llm",
+    "adapter"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qikairo7/antigravity-pool.git"
+  },
+  "homepage": "https://github.com/qikairo7/antigravity-pool#readme",
+  "bugs": {
+    "url": "https://github.com/qikairo7/antigravity-pool/issues"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-home-paths": "*",
+    "@deepseek-ai/dsh-host-webserver": "*",
+    "@deepseek-ai/dsh-llm": "*",
+    "@deepseek-ai/dsh-timeout": "*"
+  },
+  "peerDependenciesMeta": {
+    "*": {
+      "optional": true
+    }
+  }
+}
