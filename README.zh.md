@@ -1,12 +1,12 @@
-# antigravity-pool
+# dsh-gemini-pool
 
 <p align="center">
-  <img src="./assets/images/screenshots/settings-1.png" alt="Antigravity Pool 设置页" width="100%" />
+  <img src="./assets/images/screenshots/settings-1.png" alt="Gemini Pool 设置页" width="100%" />
 </p>
 
 [English](./README.md) | 简体中文
 
-多账号 Google Antigravity / Cloud Code Assist 模型提供商插件，适用于 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)：智能额度均衡、429 无感故障转移、前端生图、中英双语卡片式设置页（明暗主题支持）。
+多账号 Google Gemini / Antigravity / Cloud Code Assist 模型提供商插件，适用于 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)：智能额度均衡、429 指数退避与自动无感故障转移、后台探活、前端生图、中英双语卡片式设置页（明暗主题支持）。
 
 这是一个 DSH Web 插件。它在 provider 路由 `antigravity` 下注册 DSH `LlmAdapter`，OAuth 凭证存储于 DSH home 目录下，直接与 Cloud Code Assist 流式 API 通信，并且 Web 设置页面完整支持中英文双语国际化（i18n）。
 
@@ -19,14 +19,14 @@
 ### 方式一：直接从 GitHub 安装
 
 ```sh
-dsh plugin --profile web add github:qikairo7/antigravity-pool
+dsh plugin --profile web add github:qikairo7/dsh-gemini-pool
 ```
 
 ### 方式二：通过本地 Release 包安装
 
 ```sh
 npm run pack:dist
-dsh plugin --profile web add ./dist/antigravity-pool-0.3.0.tgz
+dsh plugin --profile web add ./dist/dsh-gemini-pool-0.4.0.tgz
 ```
 
 该 package 声明了 DSH bundle patch，安装后会自动挂载 host 插件与浏览器设置页面。
@@ -34,15 +34,15 @@ dsh plugin --profile web add ./dist/antigravity-pool-0.3.0.tgz
 如果您的 DSH 版本暂不支持 `dsh plugin add`，可手动复制到 Web profile：
 
 ```sh
-cp -R antigravity-pool "$DSH_HOME/profiles/web/node_modules/"
+cp -R dsh-gemini-pool "$DSH_HOME/profiles/web/node_modules/"
 ```
 
 然后在 profile 的 `cordis.patch.yml` 中添加该插件：
 
 ```yaml
 - insert:
-    - id: antigravity-pool
-      name: antigravity-pool
+    - id: dsh-gemini-pool
+      name: dsh-gemini-pool
 ```
 
 重启 DSH：
@@ -71,6 +71,23 @@ $DSH_HOME/storages/antigravity-pool-accounts.json
 ```
 
 > 请妥善保管该文件，其中包含 access token 与 refresh token。
+
+---
+
+## 冷却与恢复
+
+当账号遇到 429（限频或额度用尽）时，会自动进入指数退避冷却，不阻断池内其他账号调度：
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `cooldownMs` | `60000` (1分钟) | 初始冷却基础时长 |
+| `cooldownMaxMs` | `3600000` (1小时) | 最大冷却时长上限 |
+| `disableThreshold` | `5` | 连续失败达到该次数后状态转为 `disabled`（已禁用） |
+| `probeIntervalMs` | `300000` (5分钟) | 后台自动探活间隔，检测已禁用账号是否恢复额度 |
+
+已禁用的账号不会参与调度。您可以在设置页点击 **「重新启用」** 按钮手动恢复，或者等待后台探活成功后自动恢复为活跃状态。
+
+---
 
 ---
 
