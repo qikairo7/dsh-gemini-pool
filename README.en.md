@@ -71,6 +71,22 @@ Using this plugin means you understand and accept these risks. This project is n
 
 ---
 
+## 🆚 How is this different from API relays
+
+You could also buy Gemini API access from a paid relay — but that's a different animal:
+
+| | API relay / reseller | dsh-gemini-pool |
+|---|:---:|:---:|
+| **Cost** | pay-per-token with a markup | flat subscription, marginal cost ≈ 0 |
+| **Model authenticity** | ⚠️ may be silently downgraded | ✅ direct to official endpoints |
+| **Privacy** | ⚠️ your code/chats/images pass through the operator's server | ✅ in-process straight to Google, no middleman |
+| **Quota visibility** | a single opaque "site balance" | live weekly / 5h bars per account |
+| **Exit risk** | relays vanish or degrade, balance gone overnight | no third party touches your money |
+
+The relay's one real advantage: **bans hit the operator's accounts, not yours**. So the line is simple — account-safety-first, light usage, or just trying things out: use a relay. Already subscribed, privacy-conscious, want real models long-term: use this.
+
+---
+
 ## 🚀 Quick Start
 
 **1. Install the plugin**
