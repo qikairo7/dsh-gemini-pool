@@ -158,8 +158,12 @@ Disabled accounts show a red tag in Settings with a one-click "Re-enable" button
 Tick to enable in Settings; enabled models float to the top with live best-quota percentages.
 
 <p align="center">
-  <img src="./assets/images/screenshots/settings-2.png" alt="Dispatch strategy and model selector" width="48%">
-  <img src="./assets/images/screenshots/settings-3.png" alt="Image generation defaults" width="40%">
+<p align="center">
+  <img src="./assets/images/screenshots/settings-2.png" alt="Dispatch strategy and model selector" width="55%">
+</p>
+<p align="center">
+  <img src="./assets/images/screenshots/settings-3.png" alt="Image generation defaults" width="65%">
+</p>
 </p>
 
 | Model | Quota pool |

@@ -160,8 +160,10 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-0.4.1.tgz
 设置页勾选即用，已勾选的模型自动置顶，每个模型实时显示池内最高可用额度。
 
 <p align="center">
-  <img src="./assets/images/screenshots/settings-2.png" alt="调度策略与模型选择器" width="48%">
-  <img src="./assets/images/screenshots/settings-3.png" alt="默认生图配置" width="40%">
+  <img src="./assets/images/screenshots/settings-2.png" alt="调度策略与模型选择器" width="55%">
+</p>
+<p align="center">
+  <img src="./assets/images/screenshots/settings-3.png" alt="默认生图配置" width="65%">
 </p>
 
 | 模型 | 额度池 |
