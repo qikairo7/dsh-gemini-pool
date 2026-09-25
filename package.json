@@ -39,6 +39,11 @@
     "prepack": "npm run check",
     "pack:dist": "mkdir -p dist && npm pack --pack-destination dist"
   },
+  "devDependencies": {
+    "@deepseek-ai/dsh-home-paths": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-llm": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-timeout": "0.1.7-rc.2"
+  },
   "engines": {
     "node": ">=20"
   },

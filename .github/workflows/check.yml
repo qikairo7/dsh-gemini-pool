@@ -12,6 +12,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      # This package has zero runtime dependencies, so no install step is
-      # needed: `npm run check` only runs `node --check` and `node --test`.
+      # Zero runtime dependencies. devDependencies provide the optional peer
+      # host packages (@deepseek-ai/*) that lib/index.js statically imports,
+      # required for the test suite to load.
+      - run: npm install --no-audit --no-fund
       - run: npm run check
