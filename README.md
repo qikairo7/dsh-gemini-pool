@@ -1,19 +1,63 @@
-# dsh-gemini-pool
+<div align="center">
 
-<p align="center">
-  <img src="./assets/images/screenshots/settings-1.png" alt="Gemini Pool settings page" width="100%" />
-</p>
+<a href="https://github.com/qikairo7/dsh-gemini-pool">
+  <picture>
+    <img src="./assets/images/screenshots/settings-1.png" alt="dsh-gemini-pool settings page" width="100%">
+  </picture>
+</a>
+
+### dsh-gemini-pool
+
+Multi-account Google Gemini / Antigravity provider for
+[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
 
 English | [简体中文](./README.zh.md)
 
-Multi-account Google Gemini / Antigravity / Cloud Code Assist provider for
-[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) — smart
-quota balancing, exponential cooldown with auto-failover, background health probing, frontend image generation, and a
-bilingual card-based settings UI with light/dark theme support.
+<a href="https://github.com/qikairo7/dsh-gemini-pool/releases"><img src="https://img.shields.io/github/v/release/qikairo7/dsh-gemini-pool?color=369eff&labelColor=black&logo=github&style=flat-square" alt="release"></a>
+<a href="https://github.com/qikairo7/dsh-gemini-pool/stargazers"><img src="https://img.shields.io/github/stars/qikairo7/dsh-gemini-pool?color=ffcb47&labelColor=black&style=flat-square" alt="stars"></a>
+<a href="https://github.com/qikairo7/dsh-gemini-pool/issues"><img src="https://img.shields.io/github/issues/qikairo7/dsh-gemini-pool?color=ff80eb&labelColor=black&style=flat-square" alt="issues"></a>
+<a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-white?labelColor=black&style=flat-square" alt="license"></a>
+<a href="https://github.com/qikairo7/dsh-gemini-pool/commits/master"><img src="https://img.shields.io/github/last-commit/qikairo7/dsh-gemini-pool?color=c4f042&labelColor=black&style=flat-square" alt="last commit"></a>
 
-This is a DSH Web plugin. It registers a DSH `LlmAdapter`
-under provider route `antigravity`, stores OAuth credentials under DSH home,
-talks to the Cloud Code Assist streaming API directly, and provides full bilingual (English & Simplified Chinese) i18n support in the Web settings page.
+<a href="https://github.com/qikairo7/dsh-gemini-pool">GitHub</a> ·
+<a href="https://github.com/qikairo7/dsh-gemini-pool/issues">Issues</a> ·
+<a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a> ·
+<a href="https://github.com/LiZhenNet/dsh-antigravity">Upstream</a>
+
+</div>
+
+***
+
+<details>
+  <summary><kbd>Table of Contents</kbd></summary>
+
+- [Why dsh-gemini-pool](#why-dsh-gemini-pool)
+- [Installation](#install-into-dsh-web)
+- [Multi-Account Pool & Login](#multi-account-pool--login)
+- [Cooldown & Recovery](#cooldown--recovery)
+- [Models](#models)
+- [License](#license)
+- [Credits](#credits)
+
+</details>
+
+<br>
+
+## Why dsh-gemini-pool
+
+dsh-gemini-pool turns a single Antigravity OAuth login into a self-healing
+account pool: every Google account you add becomes a scheduling candidate with
+its own live quota bars, and rate-limited accounts rotate, cool down and
+recover without a single visible error in your session.
+
+| Capability | Single account | dsh-gemini-pool |
+|---|---|---|
+| **429 / rate limit handling** | ❌ requests fail until the window resets | ✅ seamless failover + exponential cooldown |
+| **Multiple Google accounts** | ❌ one login at a time | ✅ smart balancing across the whole pool |
+| **Quota visibility** | ❌ opaque | ✅ per-account weekly + 5h live bars |
+| **Unhealthy accounts** | ❌ keep hitting the same dead account | ✅ auto-disable, background probe, one-click re-enable |
+| **Frontend image generation** | ❌ | ✅ `antigravity_image_generate` tool |
+| **Bilingual settings UI** | — | ✅ English / 简体中文, light & dark themes |
 
 > Unofficial integration. This project is not affiliated with or endorsed by
 > Google. Use it only with accounts and services you are authorized to access.

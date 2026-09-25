@@ -1,18 +1,64 @@
-# dsh-gemini-pool
+<div align="center">
 
-<p align="center">
-  <img src="./assets/images/screenshots/settings-1.png" alt="Gemini Pool 设置页" width="100%" />
-</p>
+<a href="https://github.com/qikairo7/dsh-gemini-pool">
+  <picture>
+    <img src="./assets/images/screenshots/settings-1.png" alt="dsh-gemini-pool 设置页" width="100%">
+  </picture>
+</a>
+
+### dsh-gemini-pool
+
+面向 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的
+多账号 Google Gemini / Antigravity 模型提供商
 
 [English](./README.md) | 简体中文
 
-多账号 Google Gemini / Antigravity / Cloud Code Assist 模型提供商插件，适用于 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)：智能额度均衡、429 指数退避与自动无感故障转移、后台探活、前端生图、中英双语卡片式设置页（明暗主题支持）。
+<a href="https://github.com/qikairo7/dsh-gemini-pool/releases"><img src="https://img.shields.io/github/v/release/qikairo7/dsh-gemini-pool?color=369eff&labelColor=black&logo=github&style=flat-square" alt="release"></a>
+<a href="https://github.com/qikairo7/dsh-gemini-pool/stargazers"><img src="https://img.shields.io/github/stars/qikairo7/dsh-gemini-pool?color=ffcb47&labelColor=black&style=flat-square" alt="stars"></a>
+<a href="https://github.com/qikairo7/dsh-gemini-pool/issues"><img src="https://img.shields.io/github/issues/qikairo7/dsh-gemini-pool?color=ff80eb&labelColor=black&style=flat-square" alt="issues"></a>
+<a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-white?labelColor=black&style=flat-square" alt="license"></a>
+<a href="https://github.com/qikairo7/dsh-gemini-pool/commits/master"><img src="https://img.shields.io/github/last-commit/qikairo7/dsh-gemini-pool?color=c4f042&labelColor=black&style=flat-square" alt="last commit"></a>
 
-这是一个 DSH Web 插件。它在 provider 路由 `antigravity` 下注册 DSH `LlmAdapter`，OAuth 凭证存储于 DSH home 目录下，直接与 Cloud Code Assist 流式 API 通信，并且 Web 设置页面完整支持中英文双语国际化（i18n）。
+<a href="https://github.com/qikairo7/dsh-gemini-pool">GitHub</a> ·
+<a href="https://github.com/qikairo7/dsh-gemini-pool/issues">Issues</a> ·
+<a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a> ·
+<a href="https://github.com/LiZhenNet/dsh-antigravity">上游项目</a>
+
+</div>
+
+***
+
+<details>
+  <summary><kbd>目录</kbd></summary>
+
+- [为什么选 dsh-gemini-pool](#为什么选-dsh-gemini-pool)
+- [安装](#安装到-dsh-web)
+- [登录与账号池管理](#登录与账号池管理)
+- [冷却与恢复](#冷却与恢复)
+- [模型列表](#模型列表)
+- [许可证](#许可证)
+- [致谢](#致谢)
+
+</details>
+
+<br>
+
+## 为什么选 dsh-gemini-pool
+
+dsh-gemini-pool 把单个 Antigravity OAuth 登录变成一个会自我修复的账号池：
+你添加的每个 Google 账号都成为独立展示额度条的调度候选，被限流的账号自动轮换、
+冷却、探活、恢复——全程你的会话看不到一条报错。
+
+| 能力 | 单账号裸用 | dsh-gemini-pool |
+|---|---|---|
+| **429 / 限频处理** | ❌ 窗口重置前一直报错 | ✅ 无感切换 + 指数退避冷却 |
+| **多 Google 账号** | ❌ 一次只能登一个 | ✅ 全池智能均衡调度 |
+| **额度可见** | ❌ 黑盒 | ✅ 每账号每周 + 5 小时实时额度条 |
+| **坏账号处理** | ❌ 反复撞同一个死号 | ✅ 自动禁用、后台探活、一键重新启用 |
+| **前端生图** | ❌ | ✅ `antigravity_image_generate` 工具 |
+| **双语设置界面** | — | ✅ 中文 / English，明暗双主题 |
 
 > 非官方集成。本项目与 Google 无关，亦未获得 Google 认可。请仅在您有权访问的账号和服务中使用。
-
----
 
 ## 安装到 DSH Web
 
@@ -51,8 +97,6 @@ cp -R dsh-gemini-pool "$DSH_HOME/profiles/web/node_modules/"
 dsh web
 ```
 
----
-
 ## 登录与账号池管理
 
 打开 **设置（Settings）> Antigravity**，支持添加和管理多个 Google 账号：
@@ -72,8 +116,6 @@ $DSH_HOME/storages/antigravity-pool-accounts.json
 
 > 请妥善保管该文件，其中包含 access token 与 refresh token。
 
----
-
 ## 冷却与恢复
 
 当账号遇到 429（限频或额度用尽）时，会自动进入指数退避冷却，不阻断池内其他账号调度：
@@ -86,10 +128,6 @@ $DSH_HOME/storages/antigravity-pool-accounts.json
 | `probeIntervalMs` | `300000` (5分钟) | 后台自动探活间隔，检测已禁用账号是否恢复额度 |
 
 已禁用的账号不会参与调度。您可以在设置页点击 **「重新启用」** 按钮手动恢复，或者等待后台探活成功后自动恢复为活跃状态。
-
----
-
----
 
 ## 模型列表
 
@@ -120,8 +158,6 @@ $DSH_HOME/storages/antigravity-pool-accounts.json
 同一额度池内的模型共享 5 小时与每周额度。额度按 Token 成本比例扣除，因此较重的大模型（如 Claude Opus）消耗额度速度会快于轻量模型。
 
 插件会在可用时通过实时的 `fetchAvailableModels` 目录将这些公开 ID 解析为内部运行时模型 ID，并自带静态路由兜底。
-
----
 
 ## 许可证
 
