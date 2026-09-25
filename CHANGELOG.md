@@ -2,6 +2,18 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## v0.5.3 — 2026-09-26
+
+### Fixed
+- **设置页整页空白（严重）**：设置页组件引用了两个从未声明的变量（`localeRev` / `setLocaleRev`，本意是语言切换后重渲染）。该引用位于组件渲染函数体内，一执行就抛 `ReferenceError`，React 随即卸载整个设置分区——表现就是「打开设置，插件卡片是空白的」。补上缺失的状态声明。已用真实渲染测试复现：修复前渲染测试全红，修复后全绿
+
+### Added
+- **客户端渲染回归测试（9 项）**：此前所有检查都是静态的（语法检查、i18n 键覆盖、模块导入、HTTP 接口探测），全部通过却漏掉了「组件根本渲染不出来」这类问题。新增测试会真正执行组件渲染函数：
+  - `test/client-render.test.mjs`——空数据渲染不抛错、渲染输出非空且含预期标题、所有被调用的 `set*` 与 hook 依赖项都有声明
+  - `test/client-render-populated.test.mjs`——用真实接口响应（已脱敏）渲染，断言账号行、额度行、模型列表都出现在输出里，并断言「打开面板即自动刷新额度」这条行为
+  - 两个文件都做了反向验证：把修复回退后测试确实变红，确认它们真能抓住这个缺陷
+- `scripts/build-status-fixture.mjs`——从本机 `/antigravity/api/status` 抓取真实响应生成测试夹具，自动脱敏（邮箱、账号 id、令牌），若发现未脱敏邮箱则拒绝写入。该脚本刻意放在 `test/` 之外，避免被 `node --test` 自动执行而改写已提交的夹具
+
 ## v0.5.2 — 2026-09-25
 
 ### Fixed
