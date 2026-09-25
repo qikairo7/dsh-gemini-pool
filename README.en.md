@@ -11,9 +11,12 @@ English · [简体中文](./README.md)
 <a href="https://github.com/qikairo7/dsh-gemini-pool/issues"><img src="https://img.shields.io/github/issues/qikairo7/dsh-gemini-pool?color=ff80eb&labelColor=black&style=flat-square" alt="issues"></a>
 <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-white?labelColor=black&style=flat-square" alt="license"></a>
 <a href="https://github.com/qikairo7/dsh-gemini-pool/commits/master"><img src="https://img.shields.io/github/last-commit/qikairo7/dsh-gemini-pool?color=c4f042&labelColor=black&style=flat-square" alt="last commit"></a>
+<a href="https://github.com/qikairo7/dsh-gemini-pool/actions/workflows/check.yml"><img src="https://img.shields.io/github/actions/workflow/status/qikairo7/dsh-gemini-pool/check.yml?color=7ee787&labelColor=black&label=check&style=flat-square" alt="CI"></a>
 
 [GitHub](https://github.com/qikairo7/dsh-gemini-pool) ·
 [Issues](https://github.com/qikairo7/dsh-gemini-pool/issues) ·
+[Changelog](./CHANGELOG.md) ·
+[Security](./SECURITY.md) ·
 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) ·
 [Upstream](https://github.com/LiZhenNet/dsh-antigravity)
 
@@ -108,7 +111,7 @@ Tick the models you want in the model selector and start chatting. Quota refresh
 
 ```sh
 npm run pack:dist
-dsh plugin --profile web add ./dist/dsh-gemini-pool-0.4.0.tgz
+dsh plugin --profile web add ./dist/dsh-gemini-pool-0.4.1.tgz
 ```
 
 If your DSH does not support `dsh plugin add`, copy the package into `$DSH_HOME/profiles/web/node_modules/` and add to `cordis.patch.yml`:

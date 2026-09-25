@@ -11,9 +11,12 @@
 <a href="https://github.com/qikairo7/dsh-gemini-pool/issues"><img src="https://img.shields.io/github/issues/qikairo7/dsh-gemini-pool?color=ff80eb&labelColor=black&style=flat-square" alt="issues"></a>
 <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-white?labelColor=black&style=flat-square" alt="license"></a>
 <a href="https://github.com/qikairo7/dsh-gemini-pool/commits/master"><img src="https://img.shields.io/github/last-commit/qikairo7/dsh-gemini-pool?color=c4f042&labelColor=black&style=flat-square" alt="last commit"></a>
+<a href="https://github.com/qikairo7/dsh-gemini-pool/actions/workflows/check.yml"><img src="https://img.shields.io/github/actions/workflow/status/qikairo7/dsh-gemini-pool/check.yml?color=7ee787&labelColor=black&label=check&style=flat-square" alt="CI"></a>
 
 [GitHub](https://github.com/qikairo7/dsh-gemini-pool) ·
 [Issues](https://github.com/qikairo7/dsh-gemini-pool/issues) ·
+[更新日志](./CHANGELOG.md) ·
+[安全策略](./SECURITY.md) ·
 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) ·
 [上游项目](https://github.com/LiZhenNet/dsh-antigravity)
 
@@ -110,7 +113,7 @@ dsh plugin --profile web add github:qikairo7/dsh-gemini-pool
 
 ```sh
 npm run pack:dist
-dsh plugin --profile web add ./dist/dsh-gemini-pool-0.4.0.tgz
+dsh plugin --profile web add ./dist/dsh-gemini-pool-0.4.1.tgz
 ```
 
 若 DSH 版本不支持 `dsh plugin add`，手动复制包到 `$DSH_HOME/profiles/web/node_modules/`，并在 `cordis.patch.yml` 中添加：
