@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { AccountPoolManager } from "../lib/pool.js";
-import { probeAccountLiveness, requestAntigravityChunksWithAccount } from "../lib/index.js";
+import { probeAccountLiveness } from "../lib/index.js";
 
 async function createTempManager() {
   const dir = await mkdtemp(join(tmpdir(), "gemini-pool-probe-"));
@@ -91,6 +91,11 @@ test("probeAccountLiveness targets streamGenerateContent with a 1-token minimal 
         assert.equal(body.request.generationConfig.maxOutputTokens, 1, "probe must cap output at 1 token");
         const text = JSON.stringify(body.request.contents);
         assert.ok(text.includes("ping"), "probe must send a minimal prompt");
+        // The probe must exercise the primary TEXT model: quota buckets are
+        // per-model, an image-model probe would miss text-traffic rate limits.
+        const exercisesTextModel =
+          streamCalls[0].url.includes("gemini-3.8-flash") || JSON.stringify(body).includes("gemini-3.8-flash");
+        assert.ok(exercisesTextModel, `probe must target the primary text model (url: ${streamCalls[0].url})`);
       },
     );
   } finally {
@@ -107,7 +112,7 @@ test("probeAccountLiveness surfaces a 429 raised by the streaming path", async (
         if (isDiscoveryRequest(url)) return discoveryResponse();
         return sseResponse(
           `data: ${JSON.stringify({ error: { message: "429 RESOURCE_EXHAUSTED: Individual quota reached" } })}\n\n`,
-          );
+        );
       },
       async () => {
         await assert.rejects(
@@ -119,11 +124,4 @@ test("probeAccountLiveness surfaces a 429 raised by the streaming path", async (
   } finally {
     await cleanup();
   }
-});
-
-test("probeAccountLiveness reuses the shared stream request helper", () => {
-  // Guard against a future refactor that makes the probe diverge from the real
-  // traffic path: the helper the probe drains must be the same generator the
-  // adapter streams from.
-  assert.equal(typeof requestAntigravityChunksWithAccount, "function");
 });

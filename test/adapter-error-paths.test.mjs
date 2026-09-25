@@ -198,9 +198,7 @@ test("all accounts disabled yields a non-AUTH error code from stream()", async (
             }
           },
           (error) => {
-            assert.notEqual(error.code, "AUTH", `all-disabled must not be reported as AUTH (got ${error.code})`);
-            assert.equal(typeof error.code, "string");
-            assert.ok(error.code.length > 0);
+            assert.equal(error.code, "EXHAUSTED", `all-disabled pool must surface as EXHAUSTED (got ${error.code})`);
             return true;
           },
         );
