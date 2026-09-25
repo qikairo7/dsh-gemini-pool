@@ -2,7 +2,7 @@
 
 ### dsh-gemini-pool
 
-**把多个 Google Gemini 账号，变成一个会自我修复的模型池**
+**DSH 用上 Gemini 的方式 —— 让你的 Google AI Pro 订阅，成为编程模型池**
 
 [English](./README.en.md) · 简体中文
 
@@ -23,9 +23,11 @@
 
 ## ✨ 这是什么
 
-dsh-gemini-pool 是 [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness) 的模型提供插件。它把你手里的多个 Google 账号组成一个统一的账号池——额度自动均衡、429 自动切换、坏号自动冷却与探活恢复。你在对话里永远不会看到「额度用尽，请稍后再试」。
+[DeepSeek Harness（DSH）](https://github.com/deepseek-ai/deepseek-harness) 本身无法直连 Gemini。这个插件打通了那条路：通过 Google Antigravity / Cloud Code Assist 通道，把你已有的 **Google AI Pro 订阅**直接接入 DSH —— 不用另买 API key，订阅额度即用即扣。
 
-打开设置页，每个账号一张卡片，每周与 5 小时额度实时可见；池子背后，调度、切换、冷却、探活全部自动完成。
+为什么非要用 Gemini？**多模态**看图识图、**前端与 UI 设计**代码质量出色、还能随手**生图**做界面素材 —— 这些正是编程场景里最值钱的能力，现在直接在你的 DSH 里按订阅额度使用。
+
+不止一个 Google 账号？全部加进来组成**账号池**：额度自动均衡、429 无感切换、坏号自动冷却与探活恢复。打开设置页，每个账号一张卡片，每周与 5 小时额度实时可见 —— 调度、切换、冷却，全部自动完成。
 
 <p align="center">
   <img src="./assets/images/screenshots/settings-1.png" alt="dsh-gemini-pool 设置页" width="78%">
@@ -35,14 +37,16 @@ dsh-gemini-pool 是 [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deep
 
 ## 🆚 为什么需要它
 
-| | 单账号直连 | dsh-gemini-pool |
+装与不装，你的 Google AI Pro 订阅是两种命运：
+
+| | 不装：订阅只在网页版 | 装：订阅接入 DSH |
 |---|:---:|:---:|
-| 429 / 限频 | ❌ 报错，干等窗口重置 | ✅ 无感切换到健康账号 |
-| 多账号管理 | ❌ 手动换号重登 | ✅ 一键加号，全池调度 |
+| Gemini 多模态（看图） | ❌ 编程时用不上 | ✅ 对话里直接丢图 |
+| 前端 / UI 代码生成 | ❌ 网页版没有工程上下文 | ✅ 直接读懂你的项目 |
+| 生图做界面素材 | ⚠️ 来回切换复制 | ✅ `antigravity_image_generate` 自动出图入库 |
+| 多账号额度 | — | ✅ 全池调度，429 无感切换 |
 | 额度情况 | ❌ 黑盒 | ✅ 每账号实时额度条 |
-| 坏账号 | ❌ 反复撞同一个死号 | ✅ 自动禁用 + 探活复活 |
-| 前端生图 | ❌ 手动切模型 | ✅ `antigravity_image_generate` 自动出图 |
-| 界面语言 | — | ✅ 中文 / English，明暗双主题 |
+| 坏账号 | ❌ 反复撞死号 | ✅ 自动禁用 + 探活复活 |
 
 ---
 

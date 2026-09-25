@@ -2,7 +2,7 @@
 
 ### dsh-gemini-pool
 
-**Turn multiple Google Gemini accounts into one self-healing model pool**
+**The way to use Gemini in DSH — turn your Google AI Pro subscription into a coding model pool**
 
 English · [简体中文](./README.md)
 
@@ -23,9 +23,11 @@ English · [简体中文](./README.md)
 
 ## ✨ What is this
 
-dsh-gemini-pool is a model provider plugin for [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness). It pools your Google accounts into one scheduling layer — quotas auto-balanced, 429s auto-failed-over, unhealthy accounts auto-cooled and probed back to life. You never see "quota exceeded" in your session.
+[DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness) cannot talk to Gemini directly. This plugin is the bridge: via the Google Antigravity / Cloud Code Assist channel, it plugs your existing **Google AI Pro subscription** straight into DSH — no extra API keys, your subscription quota just works.
 
-Open the settings page and every account is a card with live weekly and 5-hour quota bars; behind the scenes, scheduling, failover, cooldown and probing are fully automatic.
+Why Gemini? Best-in-class **multimodal** understanding, excellent **frontend/UI code generation**, and built-in **image generation** for interface assets — exactly the capabilities that matter most when coding, now billed against a subscription you may already pay for.
+
+More than one Google account? Pool them all: quotas auto-balanced, 429s fail over seamlessly, unhealthy accounts cool down and self-heal. Every account is a card with live weekly and 5-hour quota bars — scheduling is fully automatic.
 
 <p align="center">
   <img src="./assets/images/screenshots/settings-1.png" alt="dsh-gemini-pool settings page" width="78%">
@@ -35,14 +37,16 @@ Open the settings page and every account is a card with live weekly and 5-hour q
 
 ## 🆚 Why you need it
 
-| | Single account | dsh-gemini-pool |
+With or without this plugin, your Google AI Pro subscription lives two different lives:
+
+| | Without: web-only subscription | With: subscription inside DSH |
 |---|:---:|:---:|
-| 429 / rate limits | ❌ error out until reset | ✅ seamless failover to a healthy account |
-| Multiple accounts | ❌ manual re-login to switch | ✅ one-click add, pool-wide scheduling |
-| Quota visibility | ❌ black box | ✅ live per-account quota bars |
-| Unhealthy accounts | ❌ keep hitting the same dead one | ✅ auto-disable + probe + revive |
-| Frontend images | ❌ manual model switching | ✅ `antigravity_image_generate` tool |
-| UI language | — | ✅ English / 简体中文, light & dark |
+| Gemini multimodal (vision) | ❌ unavailable while coding | ✅ drop images into the chat |
+| Frontend / UI codegen | ❌ no project context in web | ✅ reads your actual codebase |
+| Image gen for UI assets | ⚠️ manual copy-paste | ✅ `antigravity_image_generate` auto-saves |
+| Multi-account quota | — | ✅ pool scheduling, seamless 429 failover |
+| Quota visibility | ❌ black box | ✅ live per-account bars |
+| Unhealthy accounts | ❌ keep hitting dead ones | ✅ auto-disable + probe + revive |
 
 ---
 
