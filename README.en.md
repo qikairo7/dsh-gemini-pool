@@ -50,6 +50,27 @@ With or without this plugin, your Google AI Pro subscription lives two different
 
 ---
 
+## ⚠️ Account Ban Risk — Read Before Installing
+
+This is an unofficial third-party tool that accesses Google endpoints by impersonating the Antigravity client. **Google has officially confirmed that using third-party tools to access Antigravity resources violates the Terms of Service, and has carried out mass bans** (see the [official gemini-cli announcement](https://github.com/google-gemini/gemini-cli/discussions/20632), Feb 2026 — paid subscribers were affected too).
+
+**Enforcement ladder** (per Google's own post):
+
+- First violation → email notice + recertification form → automatic reinstatement in 1–2 days
+- **Second violation → permanent ban**
+- Scope: most reports involve the Antigravity / Gemini channel being blocked (paid quota forfeited); **whether bans extend to the whole Google account (Gmail / Drive) has never been answered by Google** — assume the worst
+- Enforcement is sampling-based: many third-party users run for months untouched, but **nobody can promise you're next-proof**
+
+**Three ways to reduce risk**:
+
+1. **Use a dedicated account** — never your primary Google account
+2. **Stay moderate** — the built-in exponential backoff helps, but don't stress-test quota limits
+3. **Accept that the channel can die anytime** — the endpoints belong to Google and policy may tighten
+
+Using this plugin means you understand and accept these risks. This project is not affiliated with Google.
+
+---
+
 ## 🚀 Quick Start
 
 **1. Install the plugin**
@@ -135,6 +156,6 @@ Models in the same pool share weekly and 5-hour quotas; quota drains proportiona
 
 ## 📄 License & Credits
 
-[MIT](./LICENSE). Unofficial integration, not affiliated with Google; use only with accounts you are authorized to access.
+[MIT](./LICENSE).
 
 Built on [dsh-antigravity](https://github.com/LiZhenNet/dsh-antigravity) by [@LiZhenNet](https://github.com/LiZhenNet), with contributions from [@Lukeknow0](https://github.com/Lukeknow0), [@miuzel](https://github.com/miuzel), [@grloper](https://github.com/grloper) and [@sereineele](https://github.com/sereineele).

@@ -48,6 +48,29 @@
 | 额度情况 | ❌ 黑盒 | ✅ 每账号实时额度条 |
 | 坏账号 | ❌ 反复撞死号 | ✅ 自动禁用 + 探活复活 |
 
+> 使用本插件前，请先阅读下方的「⚠️ 封号风险」。
+
+---
+
+## ⚠️ 封号风险，使用前必读
+
+本插件是非官方第三方工具，通过复用 Antigravity 客户端身份访问 Google 接口。**Google 已官方确认：使用第三方工具访问 Antigravity 资源属于服务条款违规，并已实施过大规模封禁**（见 [gemini-cli 官方公告](https://github.com/google-gemini/gemini-cli/discussions/20632)，2026 年 2 月，付费用户亦被波及）。
+
+**处罚机制**（Google 官方公布）：
+
+- 首次违规 → 邮件通知 + 填表重新认证 → 1~2 天自动解封
+- **第二次违规 → 永久封禁**
+- 封禁范围：多数报告为 Antigravity / Gemini 通道被封（已购订阅额度一并作废）；**是否连坐整个 Google 账号（Gmail / Drive），Google 被社区两次追问均未正面回答**——请按最坏可能对待
+- 执法为抽查式：大量第三方工具用户数月无事，但**没有人能保证下一个不是你**
+
+**降低风险的三条建议**：
+
+1. **用小号**——专门注册的 Google 账号，不要用绑着重要资产的主力号
+2. **克制用量**——内置的指数退避与冷却机制有助于此，但别刻意压测额度上限
+3. **做好通道随时失效的准备**——接口是 Google 的，政策随时可能收紧
+
+使用本插件即表示你已理解并自愿接受上述风险。本项目与 Google 无任何关联。
+
 ---
 
 ## 🚀 快速开始
@@ -135,6 +158,6 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-0.4.0.tgz
 
 ## 📄 许可证与致谢
 
-[MIT](./LICENSE)。非官方集成，与 Google 无关；请仅在您有权使用的账号上使用。
+[MIT](./LICENSE)。
 
 基于 [@LiZhenNet](https://github.com/LiZhenNet) 的 [dsh-antigravity](https://github.com/LiZhenNet/dsh-antigravity) 构建，感谢 [@Lukeknow0](https://github.com/Lukeknow0)、[@miuzel](https://github.com/miuzel)、[@grloper](https://github.com/grloper)、[@sereineele](https://github.com/sereineele) 的社区贡献。
