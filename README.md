@@ -28,9 +28,9 @@
 
 [DeepSeek Harness（DSH）](https://github.com/deepseek-ai/deepseek-harness) 本身无法直连 Gemini。这个插件打通了那条路：通过 Google Antigravity / Cloud Code Assist 通道，把你已有的 **Google AI Pro 订阅**直接接入 DSH —— 不用另买 API key，订阅额度即用即扣。
 
-为什么非要用 Gemini？**多模态**看图识图、**前端与 UI 设计**代码质量出色、还能随手**生图**做界面素材 —— 这些正是编程场景里最值钱的能力，现在直接在你的 DSH 里按订阅额度使用。
+Gemini 的强项正好落在编程场景上：**多模态**看图、**前端与 UI** 代码生成质量出色，还能**生图**做界面素材。装上插件后，这些能力按订阅额度直接在 DSH 里使用。
 
-不止一个 Google 账号？全部加进来组成**账号池**：额度自动均衡、429 无感切换、坏号自动冷却与探活恢复。打开设置页，每个账号一张卡片，每周与 5 小时额度实时可见 —— 调度、切换、冷却，全部自动完成。
+不止一个 Google 账号？全部加进来组成**账号池**：额度自动均衡、429 无感切换、坏号自动冷却与探活恢复。设置页里每个账号一张卡片，每周与 5 小时额度实时可见。
 
 <p align="center">
   <img src="./assets/images/screenshots/settings-1.png" alt="dsh-gemini-pool 设置页" width="78%">
@@ -40,7 +40,7 @@
 
 ## 🆚 为什么需要它
 
-装与不装，你的 Google AI Pro 订阅是两种命运：
+装与不装，同一个 Google AI Pro 订阅是两种用法：
 
 | | 不装：订阅只在网页版 | 装：订阅接入 DSH |
 |---|:---:|:---:|
@@ -78,7 +78,7 @@
 
 ## 🆚 和 API 中转站有什么区别
 
-也可以去中转站按 token 付费买 Gemini API——但那是另一种东西：
+也可以去中转站按 token 付费买 Gemini API——那是另一种取舍：
 
 | | API 中转站 | dsh-gemini-pool |
 |---|:---:|:---:|
@@ -137,13 +137,13 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 - **主备切换** — 固定主账号，额度耗尽自动切备用
 - **手动指定** — 锁定单一账号，用于调试或专跑
 
-凭证存储在 `$DSH_HOME/storages/antigravity-pool-accounts.json`，包含 access/refresh token，请妥善保管。旧版单账号凭证升级时自动迁移，无需重新登录。
+凭证存储在 `$DSH_HOME/storages/antigravity-pool-accounts.json`，包含 access 与 refresh token，请妥善保管。旧版单账号凭证升级时自动迁移，无需重新登录。
 
 ---
 
 ## 🧊 冷却与自愈
 
-账号遇到 429 后自动进入指数退避冷却，连续失败达阈值则禁用并转入后台探活，额度恢复即自动回归——全程无需人工干预。
+账号遇到 429 后自动进入指数退避冷却，连续失败达阈值则禁用并转入后台探活，额度恢复即自动回归，全程无需人工干预。
 
 | 参数 | 默认值 | 说明 |
 |---|---|---|

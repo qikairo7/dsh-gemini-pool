@@ -2,6 +2,19 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## v0.5.2 — 2026-09-25
+
+### Fixed
+- **账号在重启后丢失（严重）**：账号池加载校验的是一个实际不存在的字段（`accessToken`），而账号真正持有的是 `access` / `refresh`——导致每次进程重启从磁盘读回时，已保存的账号在校验阶段抛错、被静默吞掉，池加载为空（有旧凭证文件时甚至被单账号迁移覆盖）。改为校验真正的持久字段 `refresh`（access 是临时令牌、可按需刷新，legacy 迁移账号允许为空）。已用「保存→新实例重载」实测复现并验证修复
+- **损坏的池文件不再静默丢弃**：池文件存在但无法解析时立即报错（携带文件路径与原因），不再静默清空并让迁移逻辑覆盖可恢复的文件
+
+### Added
+- 3 项账号池持久化回归测试（重载存活 / 空 access 仍可加载 / 损坏文件报错且不被覆盖）
+
+### Changed
+- 设置页无障碍与打磨：表单控件与 `<label>` 显式关联、额度条补 `role="progressbar"` 与 aria 值、错误/保存提示加 live region、折叠区补 `aria-expanded`、`:focus-visible` 焦点环、点按反馈与 `prefers-reduced-motion` 适配；「当前使用」标签补中英双语（行为、接口、数据流未变）
+- 文档梳理：README 中英去营销腔并对齐、修英文版破损 HTML 与语义漂移、CHANGELOG/SECURITY 轻度润色
+
 ## v0.5.1 — 2026-09-25
 
 ### Fixed
@@ -23,7 +36,7 @@
 - 生图产物落盘前校验大小（上限 20 MiB），拒绝无界 base64 写盘
 - 设置页 Web API 请求体上限 2 MiB，超限拒绝
 - 账号池加载：结构性损坏（缺 `id` / `accessToken`）立即报错并携带坏值，不再静默吞掉坏条目
-- 设置页表单：冷却参数未配置时显示为空，不再用硬编码默认值伪装成"已配置"
+- 设置页表单：冷却参数未配置时显示为空，不再用硬编码默认值伪装成“已配置”
 - 可重试状态码收敛为 `RETRYABLE_STATUSES` / `PROBE_RETRYABLE_STATUSES` 两个单一常量（原先三处独立硬编码数组）
 
 ### Added
@@ -37,7 +50,7 @@
 
 ### Fixed
 - 账号成功响应不再清零累计失败计数：间歇性坏号的退避阶梯与 `disableThreshold` 退役机制恢复生效（新增 `clearCooldownUntil()` 只清冷却窗口；`clearCooldown()` 保留手动解禁的全重置语义）
-- 禁用账号的探活恢复改走真实 `streamGenerateContent` 文本通道（1-token 最小探测）：配额元数据查询不再能"假阳性复活"被限流的账号
+- 禁用账号的探活恢复改走真实 `streamGenerateContent` 文本通道（1-token 最小探测）：配额元数据查询不再能“假阳性复活”被限流的账号
 - 账号池整体耗尽时报 `EXHAUSTED` 而非 `AUTH`，不再误导用户重新登录
 - 生图路径与流路径统一使用同一配额/限流判定（收紧后的 `isQuotaOrRateLimitError`），400 类错误文本中偶然出现的 "quota" 字样不再误伤账号
 - 流式输出中途遭遇 429 时同样标记冷却（不再换号续流，保持响应完整性）
