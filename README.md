@@ -113,7 +113,8 @@ dsh plugin --profile web add github:qikairo7/dsh-gemini-pool
 
 ```sh
 npm run pack:dist
-dsh plugin --profile web add ./dist/dsh-gemini-pool-0.4.1.tgz
+# 包名带 package.json 里的当前版本号，按 dist/ 下实际生成的文件名安装
+dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 ```
 
 若 DSH 版本不支持 `dsh plugin add`，手动复制包到 `$DSH_HOME/profiles/web/node_modules/`，并在 `cordis.patch.yml` 中添加：

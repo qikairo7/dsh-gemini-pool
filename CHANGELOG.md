@@ -2,6 +2,18 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## v0.5.1 — 2026-09-25
+
+### Fixed
+- **请求失败路径崩溃修复**：`triedEndpoints` / `lastNetworkError` 原声明在候选循环内部、却在循环外的错误分支被引用，导致任一请求彻底失败时抛 `ReferenceError` 而非分类后的 `LlmError`。该 `ReferenceError` 无法被 `isQuotaOrRateLimitError()` 识别，使得账号在「所有候选均 429」的常见场景下既不进入冷却、也不自动切号——多账号 429 容灾在该路径下形同虚设。现将两变量提升至请求级作用域
+- **并发刷新令牌加锁**：同一账号的多路请求 / 后台探活并发触发刷新时，会用同一个（旧的）`refresh_token` 同时打 Google 令牌端点；Google 每次刷新都会轮换 refresh_token，并发刷新可能互相作废并导致账号被刷废。新增 `refreshAccountTokenOnce()` 按账号合并在途刷新
+
+### Added
+- 回归测试：所有候选 429 耗尽时须抛出限流错误（非 ReferenceError）并正确记一次冷却
+
+### Docs
+- README 手动安装示例的包名去掉写死版本号，改用 `dsh-gemini-pool-*.tgz` 通配
+
 ## v0.5.0 — 2026-09-25
 
 ### Changed
