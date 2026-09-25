@@ -36,6 +36,7 @@
   },
   "scripts": {
     "check": "node --check lib/index.js && node --check lib/text.js && node --check lib/client.js && node --check lib/pool.js && node --check lib/image-tool.js && node --check bin/antigravity-login.mjs && node --test",
+    "prepack": "npm run check",
     "pack:dist": "mkdir -p dist && npm pack --pack-destination dist"
   },
   "engines": {
