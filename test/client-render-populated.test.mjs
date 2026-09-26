@@ -212,7 +212,7 @@ function loadClient({ statusPayload, quotaPayload, requests }) {
       inject: (n, fn) => fn(),
       register: (meta, render) => { sectionRender = render; return () => {}; },
     },
-    locale: { register() {}, subscribe: () => () => {}, bind: () => (k) => k, getLocale: () => "zh" },
+    locale: { register() {}, subscribe: () => () => {}, bind: () => (k) => k, getLocale: () => ({ active: "zh" }) },
     effect(fn) { fn(); },
     on() {},
   });

@@ -253,7 +253,12 @@ function loadSettingsSection() {
       register() {},
       subscribe: () => () => {},
       bind: () => (k) => k,
-      getLocale: () => "zh",
+      // 必须与 lib/client.js 的读法一致：createTranslator 取的是
+      // `getLocale()?.active`，不是整个返回值。此前 mock 返回字符串 "zh"，
+      // `active` 取到 undefined，于是回退到 `navigator.language` —— 在提供
+      // navigator 的运行时（Node >= 21）按宿主机语言走，在不提供的运行时
+      // （Node 20 / CI）变英文，导致「page title must render」在 CI 上红。
+      getLocale: () => ({ active: "zh" }),
     },
     effect(fn) {
       fn();
