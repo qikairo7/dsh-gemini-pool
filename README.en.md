@@ -178,6 +178,25 @@ Models in the same pool share the weekly and 5-hour quotas. Quota drains in prop
 
 ---
 
+## 🔗 Related Plugins
+
+[dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts) (by [Jet](https://gitee.com/iJetLi), MIT): also a DSH plugin. It aggregates login, account pools, auto-renewal and credit lookup for 9 providers — CodeArts, CodeBuddy, WorkBuddy, LobsterAI, Qoder, TRAE, Cline, Loomy and Raccoon — with a single Jet Hub settings entry.
+
+The two plugins cover non-overlapping channels and can be installed side by side:
+
+| | This plugin | dsh-codearts-auth |
+|---|---|---|
+| Channel | Google Antigravity / Cloud Code Assist | Each of the 9 platforms' own API |
+| Quota source | Your own Google AI Pro subscription | Per-platform account quota |
+| Provider routes | `antigravity` | `codearts`, `buddy`, `workbuddy`, `lobsterai`, `qoder`, `trae`, `cline`, `loomy`, `raccoon` |
+| Account pool | Multiple Google accounts, picked by remaining quota | A separate pool per provider |
+
+Its model catalog also lists Gemini models (WorkBuddy international `gemini-3.5-flash`, Cline `cline-free/gemini-3.8-flash`, TRAE `custom_model_gemini`), but those go through third-party platform channels and draw on that platform's quota — not on the Google subscription quota this plugin uses. If those 9 platforms are what you need, install it directly; this plugin does not re-cover those channels.
+
+Both plugins declare `dsh.bundle.patch`, and a profile's layer stack picks up `dsh-gemini-pool` and `codearts-auth` respectively, without overwriting each other.
+
+---
+
 ## 📄 License & Credits
 
 [MIT](./LICENSE).
