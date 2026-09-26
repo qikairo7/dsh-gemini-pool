@@ -8,7 +8,8 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # v4 同样跑在已弃用的 Node 20 上，与 setup-node 一起升到 v5。
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
           # Node 20 已被 GitHub Actions 弃用：runner 上 v4 + node-version 20 会被
