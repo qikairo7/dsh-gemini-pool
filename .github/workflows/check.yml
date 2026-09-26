@@ -9,7 +9,7 @@ jobs:
     # ubuntu-latest 这个浮动标签将于 2026-10-19 起迁移到 Ubuntu 26，固定到具体版本以消除不确定性。
     runs-on: ubuntu-24.04
     steps:
-      # v4 同样跑在已弃用的 Node 20 上，与 setup-node 一起升到 v5。
+      # Node 20 已被弃用，checkout 与 setup-node 一起统一升到 v7。
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
