@@ -9,9 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          # Node 20 已被 GitHub Actions 弃用：runner 上 v4 + node-version 20 会被
+          # 强制以 Node 24 运行并告警。直接对齐实际运行版本（>=20 仍满足 engines）。
+          node-version: 24
       # Zero runtime dependencies. devDependencies provide the optional peer
       # host packages (@deepseek-ai/*) that lib/index.js statically imports,
       # required for the test suite to load.
