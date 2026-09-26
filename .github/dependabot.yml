@@ -1,0 +1,51 @@
+version: 2
+updates:
+  # ---------------------------------------------------------------------------
+  # GitHub Actions
+  # ---------------------------------------------------------------------------
+  # 本仓库的 CI 已经把 runner 固定到 ubuntu-24.04、并把 actions/checkout 与
+  # actions/setup-node 升到 v5（见 .github/workflows/check.yml）。固定版本换来
+  # 确定性，代价是「退役时要手动 bump」——ubuntu-latest 这个浮动标签会在
+  # 2026-10-19 迁移到 Ubuntu 26，Node 20 也已被 Actions 弃用。
+  # 这一组就是为了让这些升级自己找上门：Dependabot 每周扫描一次，发现
+  # actions/checkout、actions/setup-node 等有新版本时自动开 PR。
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+
+  # ---------------------------------------------------------------------------
+  # npm
+  # ---------------------------------------------------------------------------
+  # 只跟踪真正的第三方依赖（目前是 jose）。宿主提供的 @deepseek-ai/* 系列一律
+  # 忽略，原因见下面的 ignore 规则。
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+    ignore:
+      # 为什么必须 ignore 掉 @deepseek-ai/* 全系列（重要，改之前请先读完）：
+      #
+      # 1. package.json 里这批包是「精确 pin」的：dsh-credentials / dsh-host-webserver /
+      #    dsh-home-paths / dsh-llm / dsh-timeout 都锁死在 0.1.7-rc.2，cordis 与
+      #    schemastery 分别是 ^4.0.2 / ^3.18.4。它们是 DeepSeek Harness 的宿主包，
+      #    版本必须和宿主运行时对齐，不能由我们单方面决定升级。
+      #
+      # 2. 更关键的是 npm registry 上的 latest tag 并没有跟上：这些包的 latest 至今
+      #    仍指向旧版 0.0.1-rc.1。也就是说 Dependabot 若按「升到最新版」的思路提 PR，
+      #    实际提出的是一次降级（0.1.7-rc.2 -> 0.0.1-rc.1）。
+      #
+      # 3. 一旦某个包被解析到 0.0.1-rc.1，就会和同伴的 peer 要求直接冲突——真实事故：
+      #    dsh-host-webserver 被解析成 0.0.1-rc.1，而 dsh-credentials@0.1.7-rc.2 要求
+      #    dsh-invariants@0.1.7-rc.2，npm install 在 CI 上直接报 ERESOLVE 失败
+      #    （已在 9d277f5 修复）。
+      #
+      # 结论：让 Dependabot 自由跟踪 @deepseek-ai/*，等于请它定期把 CI 弄崩一次。
+      # 这些包跟着宿主走，人工升级；这里显式 ignore 掉整条 scope。
+      - dependency-name: "@deepseek-ai/*"
