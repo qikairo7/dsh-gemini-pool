@@ -11,7 +11,7 @@ jobs:
     steps:
       # v4 同样跑在已弃用的 Node 20 上，与 setup-node 一起升到 v5。
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           # Node 20 已被 GitHub Actions 弃用：runner 上 v4 + node-version 20 会被
           # 强制以 Node 24 运行并告警。直接对齐实际运行版本（>=20 仍满足 engines）。
