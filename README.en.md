@@ -178,22 +178,27 @@ Models in the same pool share the weekly and 5-hour quotas. Quota drains in prop
 
 ---
 
-## 🔗 Related Plugins
+## 🔗 Fused providers (from dsh-codearts-auth)
 
-[dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts) (by [Jet](https://gitee.com/iJetLi), MIT): also a DSH plugin. It aggregates login, account pools, auto-renewal and credit lookup for 9 providers — CodeArts, CodeBuddy, WorkBuddy, LobsterAI, Qoder, TRAE, Cline, Loomy and Raccoon — with a single Jet Hub settings entry.
+This plugin fuses in the provider implementation of [dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts) (by [Jet](https://gitee.com/iJetLi), MIT). Installing this one plugin gives you all 10 provider routes below; there is no need to install it separately.
 
-The two plugins cover non-overlapping channels and can be installed side by side:
-
-| | This plugin | dsh-codearts-auth |
+| Route | Platform | Quota source |
 |---|---|---|
-| Channel | Google Antigravity / Cloud Code Assist | Each of the 9 platforms' own API |
-| Quota source | Your own Google AI Pro subscription | Per-platform account quota |
-| Provider routes | `antigravity` | `codearts`, `buddy`, `workbuddy`, `lobsterai`, `qoder`, `trae`, `cline`, `loomy`, `raccoon` |
-| Account pool | Multiple Google accounts, picked by remaining quota | A separate pool per provider |
+| `antigravity` | Google Antigravity / Cloud Code Assist | Your own Google AI Pro subscription |
+| `codearts` | Huawei Cloud CodeArts | That platform's account quota |
+| `buddy` / `workbuddy` | Tencent CodeBuddy / WorkBuddy | That platform's account quota |
+| `lobsterai` | NetEase Youdao LobsterAI | That platform's account quota |
+| `qoder` | Qoder | That platform's account quota |
+| `trae` | ByteDance TRAE | That platform's account quota |
+| `cline` | Cline | That platform's account quota |
+| `loomy` | iFlytek Loomy | That platform's account quota |
+| `raccoon` | SenseTime Raccoon | That platform's account quota |
 
-Its model catalog also lists Gemini models (WorkBuddy international `gemini-3.5-flash`, Cline `cline-free/gemini-3.8-flash`, TRAE `custom_model_gemini`), but those go through third-party platform channels and draw on that platform's quota — not on the Google subscription quota this plugin uses. If those 9 platforms are what you need, install it directly; this plugin does not re-cover those channels.
+The last 9 routes reuse dsh-codearts-auth's implementation for login, account pools, auto-renewal and credit lookup, from the Jet Hub panel in Settings. The Gemini account pool stays in the Antigravity panel; the two do not interfere.
 
-Both plugins declare `dsh.bundle.patch`, and a profile's layer stack picks up `dsh-gemini-pool` and `codearts-auth` respectively, without overwriting each other.
+One caveat: the Jet Hub model catalog also lists Gemini models (WorkBuddy international `gemini-3.5-flash`, Cline `cline-free/gemini-3.8-flash`, TRAE `custom_model_gemini`), but those go through third-party platform channels and draw on that platform's quota — not on the Google subscription quota used by the `antigravity` route.
+
+The fused part loads in isolation: if the host does not provide the `credentials` / `commands` services it needs, only those 9 routes are dropped and `antigravity` is unaffected.
 
 ---
 
@@ -202,3 +207,5 @@ Both plugins declare `dsh.bundle.patch`, and a profile's layer stack picks up `d
 [MIT](./LICENSE).
 
 Built on [dsh-antigravity](https://github.com/LiZhenNet/dsh-antigravity) by [@LiZhenNet](https://github.com/LiZhenNet), with community contributions from [@Lukeknow0](https://github.com/Lukeknow0), [@miuzel](https://github.com/miuzel), [@grloper](https://github.com/grloper) and [@sereineele](https://github.com/sereineele).
+
+Also fuses the provider implementation of [dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts) by [Jet](https://gitee.com/iJetLi) — the code under `lib/vendor/codearts/` comes from that project (MIT); its license text is kept at [lib/vendor/codearts/LICENSE](./lib/vendor/codearts/LICENSE). Thanks to Jet for the work; this plugin does not reimplement those 9 channels.

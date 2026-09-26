@@ -2,6 +2,24 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## v0.6.0 — 2026-09-26
+
+### Added
+- **融合 dsh-codearts-auth 的 9 条 provider 路由**：`codearts`、`buddy`、`workbuddy`、`lobsterai`、`qoder`、`trae`、`cline`、`loomy`、`raccoon`。装本插件即同时具备这 9 条通道与原有的 `antigravity`，不必再单独安装 [dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts)（作者 Jet，MIT）
+  - 复用而非重写：上游 TypeScript 源码经 esbuild 转译为 ESM 后整体置于 `lib/vendor/codearts/`（77 个文件，含 `qoder-auth-wasm.wasm`），其 MIT 许可证原文保留在同目录 `LICENSE`。本插件只做了接入，没有改上游实现
+  - 接入方式：`lib/index.js` 的 `apply()` 末尾调用上游的 `apply(ctx)`，一个调用注册全部 9 条路由，与 `ctx.llm.registerAdapter` 同源（上下游都从 `@deepseek-ai/dsh-llm` 取 `LlmAdapter`）
+  - 前端同理：上游 Jet Hub 客户端 bundle 以独立的 `window.__ModuleLoader__.load({ id: "dsh-codearts-auth" })` 块并入 `lib/client.js`，与本插件的设置页块并列，各自注册 `settings.section`
+  - **失败隔离**：这 9 条路由依赖宿主的 `credentials` / `commands` 服务。上游 `apply()` 包在 try/catch 内，服务缺失或版本不匹配时只放弃这 9 条路由并打一条 warn，`antigravity` 路由照常注册
+- `package.json`：`dependencies` 新增 `jose`（DPoP 签名，上游运行时依赖）；`peerDependencies` 新增 `@deepseek-ai/cordis`、`@deepseek-ai/dsh-credentials`、`@deepseek-ai/schemastery`（均 optional，由宿主提供）
+
+### Changed
+- 插件 `inject` 由 `["llm"]` 改为 `["llm", "credentials", "commands"]`（`export const inject` 与 `apply.inject` 同步）
+- `test/client-render.test.mjs` 与 `test/client-render-populated.test.mjs`：新增 `loadGeminiSource()`，只取 `lib/client.js` 中 id 为 `dsh-gemini-pool` 的那个模块块做静态扫描与执行；`__ModuleLoader__.load` 的桩也改为按 id 过滤。原因是 client.js 现在含两个模块块，不区分会让上游 Jet Hub 块的组件覆盖被捕获的本插件组件，导致 7 项渲染测试误报失败
+
+### 本版本未覆盖的验证
+- **9 条融合路由的真实登录与调用未做端到端验证** —— 需要各平台的真实账号，当前环境没有。已验证的是：77 个 vendor 模块可正常 import、上游 `apply()` 可被调用、失败隔离生效（无宿主服务时只 warn 不崩）、原有 33 项测试全绿
+- `npm install` 在本机需用 `--legacy-peer-deps`：仓库原有的 `@deepseek-ai/dsh-host-webserver` 与 `dsh-invariants` peer 冲突在本次改动前就存在，未在本次修改
+
 ## v0.5.3 — 2026-09-26
 
 ### Fixed

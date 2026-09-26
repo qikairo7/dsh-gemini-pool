@@ -178,22 +178,27 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 
 ---
 
-## 🔗 相关插件
+## 🔗 融合的 provider（来自 dsh-codearts-auth）
 
-[dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts)（作者 [Jet](https://gitee.com/iJetLi)，MIT）：同为 DSH 插件，聚合 9 个 provider 的登录、账号池、自动续期与积分查询 —— CodeArts、CodeBuddy、WorkBuddy、LobsterAI、Qoder、TRAE、Cline、Loomy、Raccoon，设置入口统一在 Jet Hub。
+本插件已融合 [dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts)（作者 [Jet](https://gitee.com/iJetLi)，MIT）的 provider 实现。装这一个插件即同时获得下面 10 条 provider 路由，不必再单独安装它：
 
-两者覆盖的通道不重叠，可以同时安装：
-
-| | 本插件 | dsh-codearts-auth |
+| 路由 | 平台 | 额度来源 |
 |---|---|---|
-| 通道 | Google Antigravity / Cloud Code Assist | 上列 9 家平台各自的接口 |
-| 额度来源 | 你自己的 Google AI Pro 订阅 | 各平台账号额度 |
-| provider 路由 | `antigravity` | `codearts`、`buddy`、`workbuddy`、`lobsterai`、`qoder`、`trae`、`cline`、`loomy`、`raccoon` |
-| 账号池 | 多个 Google 账号，按剩余额度选号 | 各 provider 独立账号池 |
+| `antigravity` | Google Antigravity / Cloud Code Assist | 你自己的 Google AI Pro 订阅 |
+| `codearts` | 华为云 CodeArts | 该平台账号额度 |
+| `buddy` / `workbuddy` | 腾讯 CodeBuddy / WorkBuddy | 该平台账号额度 |
+| `lobsterai` | 有道 LobsterAI | 该平台账号额度 |
+| `qoder` | Qoder | 该平台账号额度 |
+| `trae` | 字节 TRAE | 该平台账号额度 |
+| `cline` | Cline | 该平台账号额度 |
+| `loomy` | 讯飞 Loomy | 该平台账号额度 |
+| `raccoon` | 商汤小浣熊 Raccoon | 该平台账号额度 |
 
-它的模型目录里也有 Gemini 模型（WorkBuddy 国际版 `gemini-3.5-flash`、Cline `cline-free/gemini-3.8-flash`、TRAE `custom_model_gemini`），但走的是第三方平台通道，消耗该平台的额度，与本插件所用的 Google 订阅额度无关。要接那 9 家平台直接装它即可，本插件不重复覆盖这些通道。
+后 9 条路由的登录、账号池、自动续期与积分查询沿用 dsh-codearts-auth 的实现，入口在设置页的 Jet Hub 面板；Gemini 账号池仍在 Antigravity 面板，两边互不干扰。
 
-两个插件都以 `dsh.bundle.patch` 声明接入，profile 的 layer 栈分别拾取 `dsh-gemini-pool` 与 `codearts-auth`，互不覆盖。
+需要注意：Jet Hub 的模型目录里也有 Gemini 模型（WorkBuddy 国际版 `gemini-3.5-flash`、Cline `cline-free/gemini-3.8-flash`、TRAE `custom_model_gemini`），但走的是第三方平台通道、消耗该平台额度，与 `antigravity` 路由所用的 Google 订阅额度无关。
+
+融合部分是隔离加载的：若宿主未提供它所需的 `credentials` / `commands` 服务，只放弃这 9 条路由，`antigravity` 不受影响。
 
 ---
 
@@ -202,3 +207,5 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 [MIT](./LICENSE)。
 
 基于 [@LiZhenNet](https://github.com/LiZhenNet) 的 [dsh-antigravity](https://github.com/LiZhenNet/dsh-antigravity) 构建，感谢 [@Lukeknow0](https://github.com/Lukeknow0)、[@miuzel](https://github.com/miuzel)、[@grloper](https://github.com/grloper)、[@sereineele](https://github.com/sereineele) 的社区贡献。
+
+融合 [dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts) 的 provider 实现，作者 [Jet](https://gitee.com/iJetLi) —— `lib/vendor/codearts/` 下的代码来自该项目（MIT），许可证原文见 [lib/vendor/codearts/LICENSE](./lib/vendor/codearts/LICENSE)。感谢 Jet 的工作，本插件没有重写这 9 条通道。

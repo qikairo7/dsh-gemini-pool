@@ -15,6 +15,17 @@ import { dirname, join } from "node:path";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const CLIENT_PATH = join(here, "..", "lib", "client.js");
+
+// 同 client-render.test.mjs：lib/client.js 含两个 ModuleLoader 块，本测试只
+// 针对本插件（dsh-gemini-pool）的设置页，故只取第一个块。
+function loadGeminiSource() {
+  const full = readFileSync(CLIENT_PATH, "utf8");
+  const marker = "window.__ModuleLoader__.load(";
+  const first = full.indexOf(marker);
+  assert.notEqual(first, -1, "lib/client.js must contain a ModuleLoader block");
+  const second = full.indexOf(marker, first + marker.length);
+  return second === -1 ? full : full.slice(0, second);
+}
 const FIXTURE_PATH = join(here, "fixtures", "status-value.json");
 
 const STATUS_FIXTURE = JSON.parse(readFileSync(FIXTURE_PATH, "utf8"));
@@ -155,7 +166,7 @@ function renderTree(node, rt, depth = 0) {
 
 /** Load client.js, apply() it, and return a mount() helper that runs effects + re-renders. */
 function loadClient({ statusPayload, quotaPayload, requests }) {
-  const source = readFileSync(CLIENT_PATH, "utf8");
+  const source = loadGeminiSource();
   const rt = createReactRuntime();
   const { document } = makeDomStub();
 
@@ -173,7 +184,7 @@ function loadClient({ statusPayload, quotaPayload, requests }) {
 
   let captured = null;
   const windowStub = {
-    __ModuleLoader__: { load(mod) { captured = mod; } },
+    __ModuleLoader__: { load(mod) { if (mod && mod.id === "dsh-gemini-pool") captured = mod; } },
     document,
     addEventListener() {},
     removeEventListener() {},

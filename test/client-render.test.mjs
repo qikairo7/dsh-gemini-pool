@@ -21,6 +21,18 @@ import { createRequire } from "node:module";
 const here = dirname(fileURLToPath(import.meta.url));
 const CLIENT_PATH = join(here, "..", "lib", "client.js");
 
+// lib/client.js 现在承载两个 ModuleLoader 块：本插件的 dsh-gemini-pool，
+// 以及融合进来的 dsh-codearts-auth（Jet Hub 面板）。本文件的回归测试只针对
+// 本插件的设置页，故静态扫描与执行都只取第一个块。
+function loadGeminiSource() {
+  const full = readFileSync(CLIENT_PATH, "utf8");
+  const marker = "window.__ModuleLoader__.load(";
+  const first = full.indexOf(marker);
+  assert.notEqual(first, -1, "lib/client.js must contain a ModuleLoader block");
+  const second = full.indexOf(marker, first + marker.length);
+  return second === -1 ? full : full.slice(0, second);
+}
+
 /** Minimal DOM good enough for installStyle() / patchNavIcon(). */
 function makeDomStub() {
   const makeEl = (tag = "div") => {
@@ -173,7 +185,7 @@ function renderToText(node, React, depth = 0) {
 
 /** Load lib/client.js, capture the registered settings.section component, return it. */
 function loadSettingsSection() {
-  const source = readFileSync(CLIENT_PATH, "utf8");
+  const source = loadGeminiSource();
   const effectQueue = [];
   const React = createReactShim(effectQueue);
   const { document, documentElement } = makeDomStub();
@@ -182,7 +194,7 @@ function loadSettingsSection() {
   const windowStub = {
     __ModuleLoader__: {
       load(mod) {
-        captured = mod;
+        if (mod && mod.id === "dsh-gemini-pool") captured = mod;
       },
     },
     document,
@@ -281,7 +293,7 @@ test("rendered card contains the expected page chrome, not an empty tree", () =>
 test("every setState-style identifier used in client.js is declared by a useState hook", () => {
   // Generic guard for the exact bug class: a setter referenced but never declared.
   // This is what `localeRev`/`setLocaleRev` violated in v0.5.2.
-  const source = readFileSync(CLIENT_PATH, "utf8");
+  const source = loadGeminiSource();
 
   // Declared as a useState pair.
   const stateDeclared = new Set();
@@ -321,7 +333,7 @@ test("every setState-style identifier used in client.js is declared by a useStat
 test("state value identifiers referenced during render are all declared", () => {
   // `[ctx, localeRev]` was the render-time throw site in v0.5.2: `localeRev` was read
   // inside the component body but had no declaration, so the component threw on mount.
-  const source = readFileSync(CLIENT_PATH, "utf8");
+  const source = loadGeminiSource();
   const body = source.slice(source.indexOf("function GeminiSettingsPage"));
   const componentBody = body.slice(0, body.indexOf("\n    function patchNavIcon"));
 
