@@ -21,9 +21,9 @@ import { createRequire } from "node:module";
 const here = dirname(fileURLToPath(import.meta.url));
 const CLIENT_PATH = join(here, "..", "lib", "client.js");
 
-// lib/client.js 现在承载两个 ModuleLoader 块：本插件的 dsh-gemini-pool，
-// 以及融合进来的 dsh-codearts-auth（Jet Hub 面板）。本文件的回归测试只针对
-// 本插件的设置页，故静态扫描与执行都只取第一个块。
+// lib/client.js 曾承载两个 ModuleLoader 块（本插件 + 融合的 dsh-codearts-auth）。
+// v0.7.0 起移除了 dsh-codearts-auth，文件只保留本插件的设置页；这里仍按
+// 「取第一个块」的方式截取，若将来再融合其他客户端模块，测试也不会误扫。
 function loadGeminiSource() {
   const full = readFileSync(CLIENT_PATH, "utf8");
   const marker = "window.__ModuleLoader__.load(";

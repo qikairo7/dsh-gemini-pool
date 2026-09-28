@@ -178,34 +178,10 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 
 ---
 
-## 🔗 融合的 provider（来自 dsh-codearts-auth）
-
-本插件已融合 [dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts)（作者 [Jet](https://gitee.com/iJetLi)，MIT）的 provider 实现。装这一个插件即同时获得下面 10 条 provider 路由，不必再单独安装它：
-
-| 路由 | 平台 | 额度来源 |
-|---|---|---|
-| `antigravity` | Google Antigravity / Cloud Code Assist | 你自己的 Google AI Pro 订阅 |
-| `codearts` | 华为云 CodeArts | 该平台账号额度 |
-| `buddy` / `workbuddy` | 腾讯 CodeBuddy / WorkBuddy | 该平台账号额度 |
-| `lobsterai` | 有道 LobsterAI | 该平台账号额度 |
-| `qoder` | Qoder | 该平台账号额度 |
-| `trae` | 字节 TRAE | 该平台账号额度 |
-| `cline` | Cline | 该平台账号额度 |
-| `loomy` | 讯飞 Loomy | 该平台账号额度 |
-| `raccoon` | 商汤小浣熊 Raccoon | 该平台账号额度 |
-
-后 9 条路由的登录、账号池、自动续期与积分查询沿用 dsh-codearts-auth 的实现，入口在设置页的 Jet Hub 面板；Gemini 账号池仍在 Antigravity 面板，两边互不干扰。
-
-需要注意：Jet Hub 的模型目录里也有 Gemini 模型（WorkBuddy 国际版 `gemini-3.5-flash`、Cline `cline-free/gemini-3.8-flash`、TRAE `custom_model_gemini`），但走的是第三方平台通道、消耗该平台额度，与 `antigravity` 路由所用的 Google 订阅额度无关。
-
-融合部分是隔离加载的：若宿主未提供它所需的 `credentials` / `commands` 服务，只放弃这 9 条路由，`antigravity` 不受影响。
-
----
-
 ## 📄 许可证与致谢
 
 [MIT](./LICENSE)。
 
 基于 [@LiZhenNet](https://github.com/LiZhenNet) 的 [dsh-antigravity](https://github.com/LiZhenNet/dsh-antigravity) 构建，感谢 [@Lukeknow0](https://github.com/Lukeknow0)、[@miuzel](https://github.com/miuzel)、[@grloper](https://github.com/grloper)、[@sereineele](https://github.com/sereineele) 的社区贡献。
 
-融合 [dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts) 的 provider 实现，作者 [Jet](https://gitee.com/iJetLi) —— `lib/vendor/codearts/` 下的代码来自该项目（MIT），许可证原文见 [lib/vendor/codearts/LICENSE](./lib/vendor/codearts/LICENSE)。感谢 Jet 的工作，本插件没有重写这 9 条通道。
+v0.6.0 曾融合 [dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts)（作者 [Jet](https://gitee.com/iJetLi)，MIT）的 9 条第三方 provider 路由，v0.7.0 起已移除、回归 Gemini 单渠道；需要那些通道请单独安装原插件。

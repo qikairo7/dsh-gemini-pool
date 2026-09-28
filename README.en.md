@@ -178,34 +178,10 @@ Models in the same pool share the weekly and 5-hour quotas. Quota drains in prop
 
 ---
 
-## 🔗 Fused providers (from dsh-codearts-auth)
-
-This plugin fuses in the provider implementation of [dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts) (by [Jet](https://gitee.com/iJetLi), MIT). Installing this one plugin gives you all 10 provider routes below; there is no need to install it separately.
-
-| Route | Platform | Quota source |
-|---|---|---|
-| `antigravity` | Google Antigravity / Cloud Code Assist | Your own Google AI Pro subscription |
-| `codearts` | Huawei Cloud CodeArts | That platform's account quota |
-| `buddy` / `workbuddy` | Tencent CodeBuddy / WorkBuddy | That platform's account quota |
-| `lobsterai` | NetEase Youdao LobsterAI | That platform's account quota |
-| `qoder` | Qoder | That platform's account quota |
-| `trae` | ByteDance TRAE | That platform's account quota |
-| `cline` | Cline | That platform's account quota |
-| `loomy` | iFlytek Loomy | That platform's account quota |
-| `raccoon` | SenseTime Raccoon | That platform's account quota |
-
-The last 9 routes reuse dsh-codearts-auth's implementation for login, account pools, auto-renewal and credit lookup, from the Jet Hub panel in Settings. The Gemini account pool stays in the Antigravity panel; the two do not interfere.
-
-One caveat: the Jet Hub model catalog also lists Gemini models (WorkBuddy international `gemini-3.5-flash`, Cline `cline-free/gemini-3.8-flash`, TRAE `custom_model_gemini`), but those go through third-party platform channels and draw on that platform's quota — not on the Google subscription quota used by the `antigravity` route.
-
-The fused part loads in isolation: if the host does not provide the `credentials` / `commands` services it needs, only those 9 routes are dropped and `antigravity` is unaffected.
-
----
-
 ## 📄 License & Credits
 
 [MIT](./LICENSE).
 
 Built on [dsh-antigravity](https://github.com/LiZhenNet/dsh-antigravity) by [@LiZhenNet](https://github.com/LiZhenNet), with community contributions from [@Lukeknow0](https://github.com/Lukeknow0), [@miuzel](https://github.com/miuzel), [@grloper](https://github.com/grloper) and [@sereineele](https://github.com/sereineele).
 
-Also fuses the provider implementation of [dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts) by [Jet](https://gitee.com/iJetLi) — the code under `lib/vendor/codearts/` comes from that project (MIT); its license text is kept at [lib/vendor/codearts/LICENSE](./lib/vendor/codearts/LICENSE). Thanks to Jet for the work; this plugin does not reimplement those 9 channels.
+v0.6.0 briefly fused in 9 third-party provider routes from [dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts) (by [Jet](https://gitee.com/iJetLi), MIT); v0.7.0 removed them and returned to a Gemini-only plugin. Install the original plugin separately if you need those channels.

@@ -2,6 +2,21 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## v0.7.0 — 2026-09-28
+
+### Removed
+- **移除融合的 dsh-codearts-auth provider，回归 Gemini 单渠道**：不再捆绑 `codearts` / `buddy` / `workbuddy` / `lobsterai` / `qoder` / `trae` / `cline` / `loomy` / `raccoon` 九条第三方路由。需要这些通道请单独安装 [dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts)（作者 Jet，MIT）
+  - 删除 `lib/vendor/codearts/`（77 个文件，含 `qoder-auth-wasm.wasm`）及 `lib/index.js` 中对上游 `apply(ctx)` 的调用；`lib/client.js` 移除 id 为 `dsh-codearts-auth` 的 Jet Hub 客户端块，文件约 196KB → 65KB
+  - 设置页只剩 Antigravity（Gemini 账号池）面板，`antigravity` 路由行为不变
+- `package.json`：移除 `dependencies` 里的 `jose`（仅上游使用，运行时零依赖）；`description` 与 `keywords` 去掉 Cloud Code Assist，改标 `gemini`
+
+### Changed
+- 插件 `inject` 由 `["llm", "credentials", "commands"]` 回落为 `["llm"]`（`export const inject` 与 `apply.inject` 同步），不再依赖宿主的 credentials / commands 服务
+- `test/client-render.test.mjs`：`loadGeminiSource()` 的截取逻辑保留，注释更新为单模块现状
+
+### 验证
+- `npm run check`：`node --check` 全部通过，`node --test` 33 项全绿（渲染回归、池状态机、探活、适配器错误路径）
+
 ## v0.6.0 — 2026-09-26
 
 ### Added
