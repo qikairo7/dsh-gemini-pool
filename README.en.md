@@ -94,6 +94,8 @@ The relay has one real advantage: **bans hit the operator's accounts, yours stay
 
 ## 🚀 Quick Start
 
+**Requirements**: DSH 0.2.0-rc.2, the version this release is tested against (`dsh --version` to check yours).
+
 **1. Install the plugin**
 
 ```sh
@@ -183,5 +185,3 @@ Models in the same pool share the weekly and 5-hour quotas. Quota drains in prop
 [MIT](./LICENSE).
 
 Built on [dsh-antigravity](https://github.com/LiZhenNet/dsh-antigravity) by [@LiZhenNet](https://github.com/LiZhenNet), with community contributions from [@Lukeknow0](https://github.com/Lukeknow0), [@miuzel](https://github.com/miuzel), [@grloper](https://github.com/grloper) and [@sereineele](https://github.com/sereineele).
-
-v0.6.0 briefly fused in 9 third-party provider routes from [dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts) (by [Jet](https://gitee.com/iJetLi), MIT); v0.7.0 removed them and returned to a Gemini-only plugin. Install the original plugin separately if you need those channels.

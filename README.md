@@ -94,6 +94,8 @@ Gemini 的强项正好落在编程场景上：**多模态**看图、**前端与 
 
 ## 🚀 快速开始
 
+**环境要求**：DSH 0.2.0-rc.2（当前验证版本，`dsh --version` 查看）。
+
 **1. 安装插件**
 
 ```sh
@@ -183,5 +185,3 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 [MIT](./LICENSE)。
 
 基于 [@LiZhenNet](https://github.com/LiZhenNet) 的 [dsh-antigravity](https://github.com/LiZhenNet/dsh-antigravity) 构建，感谢 [@Lukeknow0](https://github.com/Lukeknow0)、[@miuzel](https://github.com/miuzel)、[@grloper](https://github.com/grloper)、[@sereineele](https://github.com/sereineele) 的社区贡献。
-
-v0.6.0 曾融合 [dsh-codearts-auth](https://gitee.com/iJetLi/deepseek-harness-codearts)（作者 [Jet](https://gitee.com/iJetLi)，MIT）的 9 条第三方 provider 路由，v0.7.0 起已移除、回归 Gemini 单渠道；需要那些通道请单独安装原插件。

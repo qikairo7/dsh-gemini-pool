@@ -2,6 +2,14 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## v0.7.2 — 2026-09-29
+
+### Changed
+- README（中英同步）：删除 v0.6.0 曾融合 dsh-codearts-auth 的历史叙述句——历史归 CHANGELOG，不挂在 README 给新用户添噪音；「快速开始」新增环境要求声明：适配 DSH 0.2.0-rc.2（`dsh --version` 查看）
+
+### 验证
+- 文档-only 变更；`npm run check` 34 项全绿，确认无意外波及
+
 ## v0.7.1 — 2026-09-29
 
 ### Fixed
