@@ -10,6 +10,9 @@
 ### Added
 - `test/adapter-image-target.test.mjs`（作者 tensor-x）：走真实路径的回归测试——真实 `AccountPoolManager` + `AntigravityPoolAdapter` 构造，fake attachments 捕获实际收到的 target，断言 `width` / `height` / `maxBytes` 均为安全正整数
 
+### Removed
+- 移除过期的 `PROJECT_STATUS.md`：内容冻结在 v0.5.3 时代（2026-09-26），与当前仓库状态不符；仓库现状以 README 与 CHANGELOG 为准
+
 ### 验证
 - 守卫先证红：在未修复的 master（ad8fecb）上仅带入新测试文件运行，1 项失败（`AssertionError: width must be positive int`，旧代码传出的 target 无 width），精确复现线上症状；修复分支上 `npm run check` 34 项全绿（含 `node --check` 六文件）
 
