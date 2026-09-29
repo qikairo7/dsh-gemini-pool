@@ -2,6 +2,17 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## v0.7.1 — 2026-09-29
+
+### Fixed
+- **带图会话整轮失败（严重，[PR #3](https://github.com/qikairo7/dsh-gemini-pool/pull/3)，作者 [tensor-x](https://github.com/tensor-x)）**：`prepareRequestImages` 调用宿主 `attachments.readImageRequest` 时传的是 `{ maxPixels, maxBytes }`，而 DSH 的 `ImageRequestTarget` 契约要求 `width` / `height` 为安全正整数（`dsh-attachment` 的 `validateTarget` 逐一校验，缺 width 即抛 `Image request width must be a positive integer.`）——消息里只要有图片附件，本轮请求在组装阶段就抛错。修复为从附件 ref 自带的 `width` / `height` 出发，vendored 一份 `dsh-attachment` 的规范函数 `requestImageDimensions(width, height, maxPixels)`（按 `REQUEST_IMAGE_MAX_PIXELS` = 2048×2048 等比缩小），与 `{ maxBytes }` 合并成合法 target 传入。附件 ref 的 `width` / `height` 由 DSH 附件存储发布时写入（`ImageAttachmentRef` 必填字段），插件侧直接使用即类型安全；未带 `attachmentId` 的 inline 图仍走原有 legacy base64 路径，不受影响
+
+### Added
+- `test/adapter-image-target.test.mjs`（作者 tensor-x）：走真实路径的回归测试——真实 `AccountPoolManager` + `AntigravityPoolAdapter` 构造，fake attachments 捕获实际收到的 target，断言 `width` / `height` / `maxBytes` 均为安全正整数
+
+### 验证
+- 守卫先证红：在未修复的 master（ad8fecb）上仅带入新测试文件运行，1 项失败（`AssertionError: width must be positive int`，旧代码传出的 target 无 width），精确复现线上症状；修复分支上 `npm run check` 34 项全绿（含 `node --check` 六文件）
+
 ## v0.7.0 — 2026-09-28
 
 ### Removed
