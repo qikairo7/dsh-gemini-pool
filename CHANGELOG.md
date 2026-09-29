@@ -2,6 +2,14 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## v0.7.3 — 2026-09-30
+
+### Added
+- `package.json` 的 `engines` 新增 `dsh` 声明：`">=0.1.7-rc.2 <0.3.0"`。npm 包发布后，dsh-market 插件市场的卡片会读取 npm manifest 里的 `engines.dsh` 显示宿主版本要求（此前 GitHub-only 分发，市场显示「未声明宿主要求」）。范围下限对齐 devDependencies 钉住的 0.1.7-rc.2，0.2.0-rc.2 宿主在范围内
+
+### 验证
+- `npm run check` 34 项全绿；`npm pack --dry-run` 核对发布清单
+
 ## v0.7.2 — 2026-09-29
 
 ### Changed
