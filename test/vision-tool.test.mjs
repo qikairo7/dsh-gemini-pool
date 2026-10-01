@@ -143,14 +143,17 @@ test("resolveImageInput reads local files via absolute and cwd-relative paths", 
   assert.equal(relResult.mimeType, "image/jpeg");
 });
 
-test("resolveImageInput refuses http(s) URLs", async () => {
-  await assert.rejects(
-    () => resolveImageInput("https://example.com/cat.png", { attachmentsRoot: "unused" }),
-    /http\(s\) URLs are not supported/i,
-  );
+test("resolveImageInput refuses non-public http(s) URL targets (SSRF guard)", async () => {
+  // Full URL fetch coverage lives in test/vision-url.test.mjs; this stays as
+  // the minimal boundary check on the shared resolver. localhost resolves
+  // locally, so no network is involved.
   await assert.rejects(
     () => resolveImageInput("http://localhost/secret", { attachmentsRoot: "unused" }),
-    /http\(s\) URLs are not supported/i,
+    /non-public address/i,
+  );
+  await assert.rejects(
+    () => resolveImageInput("http://127.0.0.1/x.png", { attachmentsRoot: "unused" }),
+    /non-public address/i,
   );
 });
 

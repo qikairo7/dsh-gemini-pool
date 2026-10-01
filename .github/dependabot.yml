@@ -14,6 +14,9 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    # 新发布的 action 版本可能存在供应链风险，14 天冷却期后再自动升级。
+    cooldown:
+      default-days: 14
     commit-message:
       prefix: "ci"
 
@@ -27,6 +30,9 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    # 新发布的依赖版本可能有供应链风险，14 天冷却期后再自动升级。
+    cooldown:
+      default-days: 14
     commit-message:
       prefix: "chore"
     ignore:
