@@ -112,6 +112,8 @@ Open DSH Settings → **Antigravity** → click "＋ Add Google Account" and aut
 
 Tick the models you want in the model selector and start chatting. Quota refresh and scheduling are automatic.
 
+Your model can't see images? Paste anyway — a pool Gemini describes them to it automatically (on by default, see "👁 Vision bypass for text-only main models").
+
 <details>
 <summary><kbd>Offline / manual install</kbd></summary>
 

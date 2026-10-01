@@ -112,6 +112,8 @@ dsh plugin --profile web add github:qikairo7/dsh-gemini-pool
 
 模型选择器里勾选要用的模型，直接开聊。额度刷新、账号调度全部自动。
 
+用的模型看不了图？也能贴——图片会由池内 Gemini 自动转述给当前模型（默认开启，见「👁 无视觉主模型的看图旁路」）。
+
 <details>
 <summary><kbd>离线安装 / 手动安装</kbd></summary>
 
