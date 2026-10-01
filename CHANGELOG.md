@@ -2,7 +2,7 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
-## Unreleased
+## v0.8.0 — 2026-10-01
 
 ### Added
 - 视觉旁路：主模型无视觉时贴图由池内 Gemini 转述为文字回喂。新增 `antigravity_read_image` 工具（接受附件哈希前缀 / 本地路径 / data: URL / http(s) 公网图片链接）、贴图准入 shim（给纯文本模型的 `resolveModelInfo` 补报 image 模态，`ANTIGRAVITY_VISION_ENABLED=false` 或 `visionEnabled: false` 可关）、`visionEnabled` / `visionModel` 池配置字段
@@ -16,6 +16,11 @@
 
 ### Fixed
 - 生图结果卡片的渲染文本此前显示 undefined：DSH 宿主调用工具 `output.render` 时第一个参数是调用入参、第二个才是 execute 返回值，`antigravity_image_generate` 的 render 按单参数声明取错了位置。改为双参形态，路径与 markdown 从返回值取
+
+### 验证
+- `npm run check` 69/69（v0.7.3 基线 34 项全保留 + 新增 35 项：视觉工具/桥接 waterfall 契约/SSRF 守卫/shim 分支/render 签名回归）；先红后绿证据留存
+- 装包实测（隔离 profile + GLM-5.3 无视觉主模型）：贴图零工具调用、模型直接给出图片精确描述（区分下拉选中态与悬停态）；设置页卡片渲染与开关交互实测；三轮 GUI 实测含两个真实 bug 的发现与修复（render 签名、waterfall 契约）
+- semgrep：v0.7.3 的 5 项基线 findings 全部消除，新增代码零 findings
 
 ## v0.7.3 — 2026-09-30
 
