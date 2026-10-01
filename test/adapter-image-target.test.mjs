@@ -132,3 +132,24 @@ test("readImageRequest receives target with valid positive width, height, and ma
     await cleanup();
   }
 });
+
+// Architecture guard (Codex review false-positive pin): the vision bridge and
+// the host's text-model projection are supposed to keep image blocks away
+// from this check. If a future refactor lets them through, this must fail
+// loudly instead of silently changing behavior.
+test("text-only model with image content still raises UNSUPPORTED_CONTENT", async () => {
+  const { manager, cleanup } = await createTempManager();
+  try {
+    await addAccount(manager, "guard@example.com");
+    const adapter = new AntigravityPoolAdapter(manager, modelSettings(), () => undefined);
+    const iterator = adapter.stream({
+      model: "gpt-oss-120b",
+      messages: [
+        { role: "user", content: [{ type: "image", data: "QUJD", mimeType: "image/png" }] },
+      ],
+    });
+    await assert.rejects(() => iterator.next(), /UNSUPPORTED_CONTENT|does not support image/i);
+  } finally {
+    await cleanup();
+  }
+});

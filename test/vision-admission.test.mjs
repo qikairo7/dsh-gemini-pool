@@ -35,6 +35,29 @@ test("resolveOriginal exposes the unwrapped original, without the image injectio
   shim.dispose();
 });
 
+test("isEnabledNow gates the wrapper at call time (hot config switch)", async () => {
+  const info = { name: "text-model", inputModalities: ["text"] };
+  const llm = llmWith(info);
+  let enabled = false;
+  const shim = installVisionAdmissionShim(llm, true, () => enabled);
+
+  // Off: the wrapper passes the host info through untouched.
+  let result = await llm.resolveModelInfo("antigravity", "text-model");
+  assert.deepEqual(result.inputModalities, ["text"]);
+
+  // Flip on at runtime: the same wrapper starts injecting.
+  enabled = true;
+  result = await llm.resolveModelInfo("antigravity", "text-model");
+  assert.deepEqual(result.inputModalities, ["text", "image"]);
+
+  // And back off again.
+  enabled = false;
+  result = await llm.resolveModelInfo("antigravity", "text-model");
+  assert.deepEqual(result.inputModalities, ["text"]);
+
+  shim.dispose();
+});
+
 test("shim leaves vision-capable models untouched", async () => {
   const info = { name: "vision-model", inputModalities: ["text", "image"] };
   const llm = llmWith(info);
