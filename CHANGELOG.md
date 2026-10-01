@@ -5,8 +5,14 @@
 ## Unreleased
 
 ### Added
-- 视觉旁路：主模型无视觉时贴图由池内 Gemini 转述为文字回喂。新增 `antigravity_read_image` 工具（接受附件哈希前缀 / 本地路径 / data: URL）、贴图准入 shim（给纯文本模型的 `resolveModelInfo` 补报 image 模态，`ANTIGRAVITY_VISION_ENABLED=false` 或 `visionEnabled: false` 可关）、`visionEnabled` / `visionModel` 池配置字段
+- 视觉旁路：主模型无视觉时贴图由池内 Gemini 转述为文字回喂。新增 `antigravity_read_image` 工具（接受附件哈希前缀 / 本地路径 / data: URL / http(s) 公网图片链接）、贴图准入 shim（给纯文本模型的 `resolveModelInfo` 补报 image 模态，`ANTIGRAVITY_VISION_ENABLED=false` 或 `visionEnabled: false` 可关）、`visionEnabled` / `visionModel` 池配置字段
 - 自动看图桥接（llm/stream）：无视觉主模型贴图时，发往模型的请求里图片块自动替换为池内 Gemini 的文字转述，模型无感获得看图能力；同一张图进程内缓存只转述一次，转述失败自动退回宿主占位路径不阻塞对话，转述文本附原始哈希可供 `antigravity_read_image` 显式细看；`visionEnabled` 开关同时控制贴图准入与自动转述
+- `antigravity_read_image` 支持 http(s) 图片 URL：仅限公网地址（DNS 解析后逐记录校验，防 loopback / 内网 / 云元数据目标与 DNS rebinding）、redirect 手动跟随且每跳重校验（上限 3 跳）、15 秒超时、仅接受 image/* 响应、10 MiB 字节上限（content-length 预检 + 流式计数双保险）
+- 设置页新增「视觉旁路」卡片：`visionEnabled` 开关与 `visionModel` 代看模型下拉（非生图 Gemini 模型），与自动桥接共享同一开关语义
+
+### Security
+- CI 加固：`.github/workflows/check.yml` 的 actions/checkout 与 actions/setup-node 从 mutable tag 钉到 commit SHA（dependabot 仍会提 PR 更新）；`.github/dependabot.yml` 两组依赖各加 14 天冷却期，降低新发布版本的供应链风险
+- `buildModelMatchRegex` 入口加输入类型与长度防御（超 200 字符直接返回永不匹配模式），动态正则路径不再可能被超长输入触达（semgrep ReDoS 基线项，原实现输入已转义、风险本就很低）
 
 ### Fixed
 - 生图结果卡片的渲染文本此前显示 undefined：DSH 宿主调用工具 `output.render` 时第一个参数是调用入参、第二个才是 execute 返回值，`antigravity_image_generate` 的 render 按单参数声明取错了位置。改为双参形态，路径与 markdown 从返回值取

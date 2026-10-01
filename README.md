@@ -165,10 +165,10 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 主模型不支持看图时（如纯文本模型），贴图由池内 Gemini 代看后以文字回喂，分两条路：
 
 - **自动转述（主路径，无感）**：贴图后插件在发往模型的请求里把图片替换为池内 Gemini 的文字转述，主模型直接读到描述，无需任何操作。同一张图只转述一次（进程内缓存），会话历史里反复出现的图不重复消耗额度；转述附原始图片哈希，转述失败自动退回宿主占位路径，不会阻塞对话。
-- **`antigravity_read_image` 工具（兜底）**：想对某张图细看时，主模型可显式调用（参数为转述文本里的哈希前缀，也接受本地路径 / data: URL，不支持 http(s) 链接），实时重新转述。
+- **`antigravity_read_image` 工具（兜底）**：想对某张图细看时，主模型可显式调用（参数为转述文本里的哈希前缀，也接受本地路径 / data: URL / http(s) 公网图片链接），实时重新转述。
 
 - **数据流向**：图片会经池内 Google 账号处理，与对话 / 生图同池同额度。
-- **默认开启**，关闭方式（二选一）：设置环境变量 `ANTIGRAVITY_VISION_ENABLED=false`；或经 `/antigravity/api/config` 在 accounts.json 里配 `visionEnabled: false`。开关同时控制贴图准入与自动转述，关闭后贴图行为恢复宿主原样。可用 `visionModel` 指定代看模型，留空则自动挑选。
+- **默认开启**，关闭方式（任选其一）：设置环境变量 `ANTIGRAVITY_VISION_ENABLED=false`；或在设置页 · 视觉旁路卡片一键关闭；或经 `/antigravity/api/config` 在 accounts.json 里配 `visionEnabled: false`。开关同时控制贴图准入与自动转述，关闭后贴图行为恢复宿主原样。`visionModel` 指定代看模型，留空则自动挑选，设置页卡片可直接选择。
 - **已知依赖**：自动转述依赖宿主 `llm/stream` 事件、贴图准入依赖 `resolveModelInfo` 行为，宿主大版本升级后若贴图行为异常，需重审本节（当前在 DSH 0.2.0-rc.2 验证）。
 
 ---
