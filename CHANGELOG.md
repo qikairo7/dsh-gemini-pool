@@ -13,9 +13,15 @@
 ### Security
 - CI 加固：`.github/workflows/check.yml` 的 actions/checkout 与 actions/setup-node 从 mutable tag 钉到 commit SHA（dependabot 仍会提 PR 更新）；`.github/dependabot.yml` 两组依赖各加 14 天冷却期，降低新发布版本的供应链风险
 - `buildModelMatchRegex` 入口加输入类型与长度防御（超 200 字符直接返回永不匹配模式），动态正则路径不再可能被超长输入触达（semgrep ReDoS 基线项，原实现输入已转义、风险本就很低）
+- `antigravity_read_image` 的本地路径输入限制在工作区根与 DSH 附件库之内，越界即拒绝——此前模型可传任意绝对/穿越路径读取进程可访问的文件并上传 Google（Codex review P1）
+- 附件对象与本地文件的 MIME 类型改为字节魔数嗅探（PNG/JPEG/WEBP/GIF），不再恒报 image/png
 
 ### Fixed
 - 生图结果卡片的渲染文本此前显示 undefined：DSH 宿主调用工具 `output.render` 时第一个参数是调用入参、第二个才是 execute 返回值，`antigravity_image_generate` 的 render 按单参数声明取错了位置。改为双参形态，路径与 markdown 从返回值取
+- `visionEnabled` 支持热切换：准入 shim 每次调用运行时判定开关状态（env 覆盖 + 池配置），设置页开关即刻生效，无需重启宿主
+- 视觉池请求的 SSE error 帧不再被静默吞掉：quota 错误帧现在正确触发账号冷却与切换，不会再返回截断描述或抛笼统错误
+- 视觉池请求的 fallback runtime 候选真正生效：主 runtime 遇 retryable 状态（404/429/5xx）自动换下一候选，与流式路径双层循环对齐；请求整体加 60 秒超时
+- 显式配置的 `visionModel` 需通过能力校验（Gemini 且接受图片输入且非生图模型），选了纯文本或生图模型时回落自动挑选并告警
 
 ### 验证
 - `npm run check` 69/69（v0.7.3 基线 34 项全保留 + 新增 35 项：视觉工具/桥接 waterfall 契约/SSRF 守卫/shim 分支/render 签名回归）；先红后绿证据留存

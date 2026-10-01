@@ -75,6 +75,7 @@ async function addAccount(manager, email) {
 }
 
 const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+const JPEG_MAGIC = Buffer.from([0xff, 0xd8, 0xff, 0xe0]);
 
 const HASH_PREFIX = "ab12cd34";
 // 64-hex object name whose prefix is HASH_PREFIX.
@@ -90,7 +91,7 @@ async function makeAttachmentsRoot() {
 }
 
 test("resolveImageInput finds the unique attachment object for a hash prefix", async (t) => {
-  const { root, cleanup } = await makeAttachmentsRoot();
+  const { root, bucket, cleanup } = await makeAttachmentsRoot();
   t.after(cleanup);
   const { base64, mimeType } = await resolveImageInput(HASH_PREFIX, { attachmentsRoot: root });
   assert.equal(mimeType, "image/png");
@@ -102,6 +103,13 @@ test("resolveImageInput finds the unique attachment object for a hash prefix", a
   // Lookup is case-insensitive on the prefix.
   const upper = await resolveImageInput(HASH_PREFIX.toUpperCase(), { attachmentsRoot: root });
   assert.equal(upper.base64, base64);
+  // Mime type is sniffed from content: attachment objects carry no extension.
+  const jpegName = "ff12cd34" + "ef567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+  const jpegBucket = join(root, "ff");
+  await mkdir(jpegBucket, { recursive: true });
+  await writeFile(join(jpegBucket, jpegName), JPEG_MAGIC);
+  const viaJpeg = await resolveImageInput("ff12cd34", { attachmentsRoot: root });
+  assert.equal(viaJpeg.mimeType, "image/jpeg");
 });
 
 test("resolveImageInput rejects 0-hit and ambiguous hash prefixes with distinct errors", async (t) => {
@@ -126,21 +134,46 @@ test("resolveImageInput parses data: URLs into mime type and base64 payload", as
   await assert.rejects(() => resolveImageInput("data:image/webp,QUJD"), /Invalid data: URL/);
 });
 
-test("resolveImageInput reads local files via absolute and cwd-relative paths", async (t) => {
-  const dir = await mkdtemp(join(tmpdir(), "vision-file-"));
-  t.after(() => rm(dir, { recursive: true, force: true }));
-  const file = join(dir, "shot.png");
+test("resolveImageInput reads local files confined to the workspace", async (t) => {
+  // Inside the workspace: absolute and cwd-relative references both work.
+  const localDir = await mkdtemp(join(process.cwd(), "test", "vision-tmp-"));
+  t.after(() => rm(localDir, { recursive: true, force: true }));
+  const file = join(localDir, "shot.png");
   await writeFile(file, PNG_MAGIC);
   const absolute = await resolveImageInput(file, { attachmentsRoot: "unused" });
   assert.equal(absolute.mimeType, "image/png");
-  await assert.rejects(() => resolveImageInput(join(dir, "missing.png"), { attachmentsRoot: "unused" }), /not found/i);
-  // A genuine cwd-relative reference (fixture lives under test/).
-  const localDir = await mkdtemp(join(process.cwd(), "test", "vision-tmp-"));
-  t.after(() => rm(localDir, { recursive: true, force: true }));
-  const localFile = join(localDir, "photo.jpg");
-  await writeFile(localFile, Buffer.from([0xff, 0xd8, 0xff, 0xe0]));
-  const relResult = await resolveImageInput(relative(process.cwd(), localFile), { attachmentsRoot: "unused" });
-  assert.equal(relResult.mimeType, "image/jpeg");
+  const relResult = await resolveImageInput(relative(process.cwd(), file), { attachmentsRoot: "unused" });
+  assert.equal(relResult.base64, absolute.base64);
+  await assert.rejects(() => resolveImageInput(join(localDir, "missing.png"), { attachmentsRoot: "unused" }), /not found/i);
+  // Content sniffing wins over the file extension (jpeg bytes, .png name).
+  const sniffDir = await mkdtemp(join(process.cwd(), "test", "vision-tmp-"));
+  t.after(() => rm(sniffDir, { recursive: true, force: true }));
+  const mislabeled = join(sniffDir, "photo.png");
+  await writeFile(mislabeled, JPEG_MAGIC);
+  const sniffed = await resolveImageInput(mislabeled, { attachmentsRoot: "unused" });
+  assert.equal(sniffed.mimeType, "image/jpeg");
+});
+
+test("resolveImageInput refuses local paths escaping the workspace (arbitrary file read)", async (t) => {
+  // Relative traversal out of the workspace.
+  await assert.rejects(
+    () => resolveImageInput("../../outside.png", { attachmentsRoot: "unused" }),
+    /inside the workspace/i,
+  );
+  // Absolute path outside the workspace (os tmpdir lives elsewhere).
+  const outsideDir = await mkdtemp(join(tmpdir(), "vision-escape-"));
+  t.after(() => rm(outsideDir, { recursive: true, force: true }));
+  const outsideFile = join(outsideDir, "secret.png");
+  await writeFile(outsideFile, PNG_MAGIC);
+  await assert.rejects(
+    () => resolveImageInput(outsideFile, { attachmentsRoot: "unused" }),
+    /inside the workspace/i,
+  );
+  // Traversal hidden inside a workspace-relative prefix is still an escape.
+  await assert.rejects(
+    () => resolveImageInput(join("test", "..", "..", "..", "secret.png"), { attachmentsRoot: "unused" }),
+    /inside the workspace/i,
+  );
 });
 
 test("resolveImageInput refuses non-public http(s) URL targets (SSRF guard)", async () => {
@@ -194,8 +227,8 @@ test("vision tool execute resolves the image, calls the pool, and renders text",
   // Empty image argument is rejected before any IO.
   await assert.rejects(() => tool.execute({ image: "  " }), /image must be/);
   // An explicit prompt is forwarded verbatim (file path input exercises the
-  // extension-based mime mapping).
-  const dir = await mkdtemp(join(tmpdir(), "vision-execute-"));
+  // mime sniffing; 4 bytes of RIFF stays extension-mapped webp).
+  const dir = await mkdtemp(join(process.cwd(), "test", "vision-tmp-"));
   t.after(() => rm(dir, { recursive: true, force: true }));
   const file = join(dir, "clip.webp");
   await writeFile(file, Buffer.from("RIFF"));
@@ -255,6 +288,102 @@ test("requestVisionThroughPool collects text parts from the pool SSE stream", as
   );
 });
 
+function errorChunk(message) {
+  return JSON.stringify({ error: { message } });
+}
+
+test("requestVisionThroughPool surfaces SSE error frames and fails over accounts", async (t) => {
+  const { manager, cleanup } = await createTempManager();
+  t.after(cleanup);
+  await addAccount(manager, "first@example.com");
+  await addAccount(manager, "second@example.com");
+
+  await withStubbedFetch(
+    async (url, init) => {
+      if (String(url).includes("fetchAvailableModels")) {
+        return new Response("{}", { status: 200, headers: { "content-type": "application/json" } });
+      }
+      const auth = String(init?.headers?.Authorization || "");
+      if (auth.includes("access_first@example.com")) {
+        return sseResponse(SSE(errorChunk("429 RESOURCE_EXHAUSTED: Individual quota reached for this account.")));
+      }
+      return sseResponse(SSE(textChunk("Second account description.")));
+    },
+    async () => {
+      const result = await requestVisionThroughPool(
+        PNG_MAGIC.toString("base64"),
+        "image/png",
+        "What is this?",
+        manager,
+        modelSettings(),
+      );
+      assert.equal(result.text, "Second account description.");
+      assert.equal(result.accountEmail, "second@example.com");
+    },
+  );
+
+  const status = await manager.getStatus();
+  const first = status.accounts.find((a) => a.email === "first@example.com");
+  assert.equal(first.inCooldown, true, "quota error frame must cool the account down");
+});
+
+test("requestVisionThroughPool rejects with the SSE error message (no silent truncation)", async (t) => {
+  const { manager, cleanup } = await createTempManager();
+  t.after(cleanup);
+  await addAccount(manager, "solo@example.com");
+
+  await withStubbedFetch(
+    async (url, init) => {
+      if (String(url).includes("fetchAvailableModels")) {
+        return new Response("{}", { status: 200, headers: { "content-type": "application/json" } });
+      }
+      return sseResponse(SSE(textChunk("partial "), errorChunk("400 INVALID_ARGUMENT: model not found")));
+    },
+    async () => {
+      await assert.rejects(
+        () => requestVisionThroughPool(PNG_MAGIC.toString("base64"), "image/png", "q", manager, modelSettings()),
+        /INVALID_ARGUMENT/,
+      );
+    },
+  );
+});
+
+test("requestVisionThroughPool retries the fallback runtime model on retryable status", async (t) => {
+  const { manager, cleanup } = await createTempManager();
+  t.after(cleanup);
+  await addAccount(manager, "fallback@example.com");
+  await manager.updateConfig({ visionModel: "gemini-3.7-flash" });
+
+  const seenModels = [];
+  await withStubbedFetch(
+    async (url, init) => {
+      const u = String(url);
+      if (u.includes("fetchAvailableModels")) {
+        return new Response("{}", { status: 200, headers: { "content-type": "application/json" } });
+      }
+      const body = JSON.parse(String(init?.body || "{}"));
+      seenModels.push(body.model);
+      // The primary runtime candidate keeps failing; the fallback must step in.
+      if (body.model === "gemini-3.7-flash-tiered") {
+        return new Response("not found", { status: 404 });
+      }
+      return sseResponse(SSE(textChunk("Fallback runtime worked.")));
+    },
+    async () => {
+      const result = await requestVisionThroughPool(
+        PNG_MAGIC.toString("base64"),
+        "image/png",
+        "q",
+        manager,
+        modelSettings(),
+      );
+      assert.equal(result.text, "Fallback runtime worked.");
+    },
+  );
+  assert.ok(seenModels.length >= 2, "must retry after the retryable status");
+  assert.ok(new Set(seenModels).size >= 2, "the retry must use a different runtime model");
+});
+
 test("resolveVisionModelId prefers visionModel, then a non-image-gen gemini, then the fallback", async (t) => {
   const { manager, cleanup } = await createTempManager();
   t.after(cleanup);
@@ -282,6 +411,13 @@ test("resolveVisionModelId prefers visionModel, then a non-image-gen gemini, the
 
   // A visionModel outside the catalog is ignored.
   await manager.updateConfig({ visionModel: "not-in-catalog" });
+  assert.equal(resolveVisionModelId(manager, settings), "gemini-2.5-pro");
+
+  // Catalogued but non-vision preferred ids are rejected: text-only and
+  // image-gen models must not be picked as the describing model.
+  await manager.updateConfig({ visionModel: "gpt-oss-120b" });
+  assert.equal(resolveVisionModelId(manager, settings), "gemini-2.5-pro");
+  await manager.updateConfig({ visionModel: "gemini-3.1-flash-image" });
   assert.equal(resolveVisionModelId(manager, settings), "gemini-2.5-pro");
 
   // Nothing matches -> documented fallback.
