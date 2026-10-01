@@ -51,6 +51,8 @@ Installing this plugin changes what your Google AI Pro subscription can do:
 | Quota visibility | ❌ black box | ✅ live per-account bars |
 | Unhealthy accounts | ❌ keep hitting dead ones | ✅ auto-disable + probe + revive |
 
+When the main model itself has no vision (text-only), pasted images are described in text by a Gemini model from the pool and fed back to the main model (the `antigravity_read_image` tool). On by default — see "👁 Vision bypass for text-only main models".
+
 > Read "⚠️ Account Ban Risk" below before installing.
 
 ---
@@ -155,6 +157,16 @@ An account that hits 429 enters exponential-backoff cooldown. Repeated failures 
 | `probeIntervalMs` | 5 min | background probe interval, auto-revive on success |
 
 Disabled accounts carry a red tag in Settings and a one-click "Re-enable" button. All of these parameters are adjustable in the "Cooldown & Recovery" section.
+
+---
+
+## 👁 Vision bypass for text-only main models
+
+When the main model cannot see images (e.g. a text-only model), a Gemini model from the pool looks at them and answers in text: DSH stores the image in the attachment store and leaves a placeholder in the message → the main model calls the `antigravity_read_image` tool (the argument is the hash prefix from the placeholder; local paths and data: URLs are also accepted, http(s) URLs are not) → a pool Gemini describes the image → the text description enters the main model's context.
+
+- **Data flow**: images are processed through Google accounts in the pool, sharing quota with chat and image generation.
+- **On by default**. To turn it off (either way): set the environment variable `ANTIGRAVITY_VISION_ENABLED=false`; or set `visionEnabled: false` in accounts.json via `/antigravity/api/config`. With it off, the host's image admission gate returns to stock and the tool simply goes unused. `visionModel` picks the describing model; leave it empty for automatic selection.
+- **Known dependency**: the image admission path relies on the DSH host's `resolveModelInfo` behavior. If pasting images misbehaves after a major host upgrade, revisit this section (verified against DSH 0.2.0-rc.2).
 
 ---
 

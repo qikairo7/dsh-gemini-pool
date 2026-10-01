@@ -2,6 +2,14 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## Unreleased
+
+### Added
+- 视觉旁路：主模型无视觉时贴图由池内 Gemini 转述为文字回喂。新增 `antigravity_read_image` 工具（接受附件哈希前缀 / 本地路径 / data: URL）、贴图准入 shim（给纯文本模型的 `resolveModelInfo` 补报 image 模态，`ANTIGRAVITY_VISION_ENABLED=false` 或 `visionEnabled: false` 可关）、`visionEnabled` / `visionModel` 池配置字段
+
+### Fixed
+- 生图结果卡片的渲染文本此前显示 undefined：DSH 宿主调用工具 `output.render` 时第一个参数是调用入参、第二个才是 execute 返回值，`antigravity_image_generate` 的 render 按单参数声明取错了位置。改为双参形态，路径与 markdown 从返回值取
+
 ## v0.7.3 — 2026-09-30
 
 ### Added
