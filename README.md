@@ -172,6 +172,7 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 - **数据流向**：图片会经池内 Google 账号处理，与对话 / 生图同池同额度。
 - **默认开启**，关闭方式（任选其一）：设置环境变量 `ANTIGRAVITY_VISION_ENABLED=false`；或在设置页 · 视觉旁路卡片一键关闭；或经 `/antigravity/api/config` 在 accounts.json 里配 `visionEnabled: false`。开关同时控制贴图准入与自动转述，关闭后贴图行为恢复宿主原样。`visionModel` 指定代看模型，留空则自动挑选，设置页卡片可直接选择。
 - **已知依赖**：自动转述依赖宿主 `llm/stream` 事件、贴图准入依赖 `resolveModelInfo` 行为，宿主大版本升级后若贴图行为异常，需重审本节（当前在 DSH 0.2.0-rc.2 验证）。
+- **排障**：贴图后模型仍收到占位文本时，先跑 `/antigravity-doctor` 看 `visionBridge` / `visionShim` 两行（`registered` + `installed` 是正常）；服务端日志里 `[Antigravity Pool Vision]` 前缀的行会记录桥的每一步判定（请求进入、模型判定、改写结果或放行原因），贴图后一条前缀行都没有，说明事件没有到达桥。
 
 ---
 

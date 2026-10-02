@@ -281,3 +281,148 @@ test("isEnabled false -> passthrough without consulting the model gate", async (
   assert.equal(gateCalls, 0);
   assert.equal(deps.describeCalls.length, 0);
 });
+
+// --- Decision-chain logging (Refs #7) ---------------------------------------
+// The bridge must say what it decided on every async path so one reproduction
+// tells which of the four candidate breakpoints (event not reaching the
+// bridge / resolver unavailable / resolver error / describe failure) fired.
+// No log lines at all means the handler was never entered with images.
+
+function imageOptions(blocks = [{ type: "image", attachment: { attachmentId: ATTACHMENT_ID } }]) {
+  return {
+    provider: "antigravity",
+    model: "glm-5.3-flash",
+    messages: [{ role: "user", content: blocks }],
+  };
+}
+
+function makeLoggingDeps(overrides = {}) {
+  const lines = [];
+  const deps = makeDeps(overrides.textOnly === undefined ? {} : { textOnly: overrides.textOnly });
+  deps.log = (message) => lines.push(message);
+  Object.assign(deps, { lines }, overrides.deps || {});
+  return { bridge: createVisionBridge(deps), lines, deps };
+}
+
+test("logging: happy path baseline signature", async () => {
+  const { bridge, lines } = makeLoggingDeps();
+  const options = imageOptions([
+    { type: "text", text: "what is this?" },
+    { type: "image", attachment: { attachmentId: ATTACHMENT_ID } },
+  ]);
+  await collect(bridge(options, makeNext(options)));
+  assert.equal(lines.length, 3, `expected request/gate/rewrote lines, got: ${JSON.stringify(lines)}`);
+  assert.match(lines[0], /^request provider=antigravity model=glm-5\.3-flash images=1$/);
+  assert.match(lines[1], /^model gate: textOnly=true$/);
+  assert.match(lines[2], /^rewrote: 1 image block\(s\) replaced$/);
+});
+
+test("logging: textOnly=false -> not-text-only passthrough", async () => {
+  const { bridge, lines } = makeLoggingDeps({ textOnly: false });
+  const options = imageOptions();
+  await collect(bridge(options, makeNext(options)));
+  assert.equal(lines.length, 3);
+  assert.match(lines[2], /^passthrough: reason=not-text-only$/);
+});
+
+test("logging: gate resolver throwing -> resolve=error passthrough", async () => {
+  const { lines } = makeLoggingDeps();
+  const deps = makeDeps();
+  deps.isTextOnlyModel = async () => {
+    throw new Error("resolver exploded");
+  };
+  deps.log = (message) => lines.push(message);
+  const bridge = createVisionBridge(deps);
+  const options = imageOptions();
+  await collect(bridge(options, makeNext(options)));
+  assert.equal(lines.length, 3);
+  assert.match(lines[1], /^model gate: resolve=error \(resolver exploded\)$/);
+  assert.match(lines[2], /^passthrough: reason=gate-error$/);
+});
+
+test("logging: all descriptions failing -> all-describe-failed passthrough", async () => {
+  const { lines } = makeLoggingDeps();
+  const deps = makeDeps();
+  deps.describeImage = async () => {
+    throw new Error("pool is down");
+  };
+  deps.log = (message) => lines.push(message);
+  const bridge = createVisionBridge(deps);
+  const options = imageOptions();
+  await collect(bridge(options, makeNext(options)));
+  const passthrough = lines.find((l) => l.startsWith("passthrough:"));
+  assert.match(passthrough, /^passthrough: reason=all-describe-failed \(1 failed\)$/);
+});
+
+test("logging: image blocks without usable source -> no-usable-source passthrough", async () => {
+  const { bridge, lines } = makeLoggingDeps();
+  // Width/height only: no attachmentId, no data — imageSourceOf cannot resolve it.
+  const options = imageOptions([{ type: "image", width: 100, height: 50 }]);
+  await collect(bridge(options, makeNext(options)));
+  const passthrough = lines.find((l) => l.startsWith("passthrough:"));
+  assert.match(passthrough, /^passthrough: reason=no-usable-source \(1 unresolved\)$/);
+});
+
+test("logging: no-image requests produce no log lines", async () => {
+  const { bridge, lines } = makeLoggingDeps();
+  const options = {
+    provider: "antigravity",
+    model: "glm-5.3-flash",
+    messages: [{ role: "user", content: [{ type: "text", text: "hello" }] }],
+  };
+  await collect(bridge(options, makeNext(options)));
+  assert.equal(lines.length, 0);
+});
+
+test("logging: failure injections have pairwise-distinguishable readouts (Refs #7 red team)", async () => {
+  const readouts = {};
+
+  // Injection A — handler entered but gate says not text-only (resolver
+  // unavailable in the assembled plugin reads exactly like this at the bridge
+  // layer; the index-side resolver log disambiguates).
+  {
+    const { bridge, lines } = makeLoggingDeps({ textOnly: false });
+    await collect(bridge(imageOptions(), makeNext(imageOptions())));
+    readouts.notTextOnly = lines.join("|");
+  }
+  // Injection B — resolver throws.
+  {
+    const { lines } = makeLoggingDeps();
+    const deps = makeDeps();
+    deps.isTextOnlyModel = async () => {
+      throw new Error("boom");
+    };
+    deps.log = (m) => lines.push(m);
+    const bridge = createVisionBridge(deps);
+    await collect(bridge(imageOptions(), makeNext(imageOptions())));
+    readouts.gateError = lines.join("|");
+  }
+  // Injection C — describe fails for every usable image.
+  {
+    const { lines } = makeLoggingDeps();
+    const deps = makeDeps();
+    deps.describeImage = async () => {
+      throw new Error("pool is down");
+    };
+    deps.log = (m) => lines.push(m);
+    const bridge = createVisionBridge(deps);
+    await collect(bridge(imageOptions(), makeNext(imageOptions())));
+    readouts.describeFailed = lines.join("|");
+  }
+  // Injection D — event never reaches the handler (or no image): no lines.
+  {
+    const { bridge, lines } = makeLoggingDeps();
+    const options = {
+      provider: "antigravity",
+      model: "glm-5.3-flash",
+      messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+    };
+    await collect(bridge(options, makeNext(options)));
+    readouts.eventMissed = lines.join("|");
+  }
+
+  const values = Object.values(readouts);
+  assert.ok(values.every((v) => v.length > 0 || v === readouts.eventMissed));
+  assert.equal(new Set(values).size, values.length, "all four readouts must be pairwise distinct");
+  assert.equal(readouts.eventMissed, "", "missed event must read as zero lines");
+});
