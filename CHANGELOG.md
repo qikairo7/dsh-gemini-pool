@@ -2,6 +2,14 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [未发布]
+
+### Added
+- 看图桥接决策链可观测（Refs #7）：桥在每条异步路径输出一行判定日志（请求进入、模型判定、改写结果或放行原因），贴图后服务端日志里零 `[Antigravity Pool Vision]` 前缀行，就是「事件没有到达桥」的直接证据；模型判定 resolver 的 unavailable / error 两态、shim 安装结果全部落日志；`/antigravity-doctor` 新增 `visionEnabled` / `visionBridge` / `visionShim` 三行组装状态；池 init 失败不再静默（记入 doctor 状态并告警）。纯观测改动：桥所有分支的判定与放行行为与 v0.8.0 等价，根因修复待一次带观测的复现数据（issue #7 的四个候选断点无法静态区分）
+
+### 验证
+- `npm run check` 84/84（v0.8.0 基线 75 项全保留 + 新增 9 项：决策日志契约、四种失败注入读出两两可区分、doctor 段）；两处 mutation 反证（入口正向控制日志、doctor vision 行）先红后恢复；semgrep 1 findings 为 v0.8.0 已记录的 buildModelMatchRegex 基线项，本次新增代码零 findings
+
 ## v0.8.0 — 2026-10-01
 
 ### Added

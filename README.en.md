@@ -172,6 +172,7 @@ When the main model cannot see images (e.g. a text-only model), a Gemini model f
 - **Data flow**: images are processed through Google accounts in the pool, sharing quota with chat and image generation.
 - **On by default**. To turn it off (any one of these): set the environment variable `ANTIGRAVITY_VISION_ENABLED=false`; or toggle it off in the Settings · Vision Bypass card; or set `visionEnabled: false` in accounts.json via `/antigravity/api/config`. The switch governs both image admission and automatic description; with it off, pasting behaves exactly as the host does out of the box. `visionModel` picks the describing model — leave it empty for automatic selection, or pick one in the Settings card.
 - **Known dependency**: automatic description relies on the host's `llm/stream` event and image admission on `resolveModelInfo`. If pasting images misbehaves after a major host upgrade, revisit this section (verified against DSH 0.2.0-rc.2).
+- **Troubleshooting**: if the model still receives a placeholder after pasting an image, run `/antigravity-doctor` and check the `visionBridge` / `visionShim` lines (`registered` + `installed` is the healthy state). Server log lines prefixed `[Antigravity Pool Vision]` record every bridge decision (request entry, model gate, rewrite result or passthrough reason); zero prefixed lines after a paste means the event never reached the bridge.
 
 ---
 
