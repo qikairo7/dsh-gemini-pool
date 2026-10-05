@@ -133,6 +133,15 @@ Three strategies, one click to switch in Settings:
 - **Primary & backup**: fixed primary account, automatic switch when its quota runs out
 - **Manual**: lock to one account for debugging or dedicated runs
 
+Day-to-day operations run as chat commands:
+
+| Command | What it does |
+|---|---|
+| `/antigravity-login` | sign in with a Google account |
+| `/antigravity-quota` | show per-account quota |
+| `/antigravity-doctor` | run self-diagnostics (vision troubleshooting below) |
+| `/antigravity-logout` | sign out and remove stored credentials |
+
 Credentials are stored in `$DSH_HOME/storages/antigravity-pool-accounts.json`, including access and refresh tokens. Keep that file private. Legacy single-account credentials migrate automatically on upgrade, so you do not have to sign in again.
 
 ## 🧊 Cooldown & Self-healing

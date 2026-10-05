@@ -133,6 +133,15 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 - **主备切换** — 固定主账号，额度耗尽自动切备用
 - **手动指定** — 锁定单一账号，用于调试或专跑
 
+日常操作走对话命令：
+
+| 命令 | 作用 |
+|---|---|
+| `/antigravity-login` | 登录 Google 账号 |
+| `/antigravity-quota` | 查询各账号额度 |
+| `/antigravity-doctor` | 自检诊断（视觉旁路排障见下文） |
+| `/antigravity-logout` | 登出并移除账号凭证 |
+
 凭证存储在 `$DSH_HOME/storages/antigravity-pool-accounts.json`，包含 access 与 refresh token，请妥善保管。旧版单账号凭证升级时自动迁移，无需重新登录。
 
 ## 🧊 冷却与自愈
