@@ -2,7 +2,7 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
-## [未发布]
+## v0.8.1 — 2026-10-05
 
 ### Security
 - **`/antigravity/api` 前缀接入宿主准入栅栏**：此前插件全部 web 路由（status / doctor / quota / login / logout / accounts\* / config / models）在 dispatcher 层无鉴权——宿主组合层的既有姿态是「鉴权属各路由 owner」，而本插件从未认领。现路由 handler 开头调用宿主 `connection.admit(request)`（与宿主自有 `/api` 通道和 WebSocket 升级同一原语）：Host/Origin 信任检查不过返回 403、无 DSH 浏览器会话返回 401，拒绝发生在任何路由逻辑之前（池状态、凭证、doctor 输出均不可达）。设置页卡片与已登录浏览器同源携带会话 cookie，不受影响；Google 登录的 OAuth 回调走独立本地端口（`ANTIGRAVITY_CALLBACK_PORT`），与栅栏无关。注入声明由 `["webServer"]` 改为 `["webServer", "connection"]`
