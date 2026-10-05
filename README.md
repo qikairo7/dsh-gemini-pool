@@ -88,7 +88,7 @@ Gemini 的强项正好落在编程场景上：**多模态**看图、**前端与 
 
 ## 🚀 快速开始
 
-**环境要求**：DSH 0.2.0-rc.2（整包验证版本）；视觉旁路路径已在 0.2.1-alpha.1 验证。运行 `dsh --version` 查看本机版本。
+**环境要求**：DSH 0.2.0-rc.2（当前验证版本）。运行 `dsh --version` 查看本机版本。
 
 **1. 安装插件**
 
@@ -133,14 +133,14 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 - **主备切换** — 固定主账号，额度耗尽自动切备用
 - **手动指定** — 锁定单一账号，用于调试或专跑
 
-日常操作走对话命令（经宿主 `commands` 服务注册；宿主未提供该服务时不注册，改用设置页、`/antigravity/api` 路由或 `antigravity-login` CLI）：
+日常操作走对话命令：
 
 | 命令 | 作用 |
 |---|---|
-| `/antigravity-login` | 登录 Google 账号（返回授权链接，完成后账号自动入池） |
-| `/antigravity-quota` | 刷新并显示各账号额度 |
+| `/antigravity-login` | 登录 Google 账号 |
+| `/antigravity-quota` | 查询各账号额度 |
 | `/antigravity-doctor` | 自检诊断（视觉旁路排障见下文） |
-| `/antigravity-logout confirm` | 登出并移除全部账号凭证（须带 `confirm` 参数，防误触） |
+| `/antigravity-logout` | 登出并移除账号凭证 |
 
 凭证存储在 `$DSH_HOME/storages/antigravity-pool-accounts.json`，包含 access 与 refresh token，请妥善保管。旧版单账号凭证升级时自动迁移，无需重新登录。
 
@@ -171,9 +171,8 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
   - 经 `/antigravity/api/config` 在 accounts.json 里配置 `visionEnabled: false`
 
   开关同时控制贴图准入与自动转述；关闭后，贴图行为恢复宿主原样。`visionModel` 指定代看模型；留空则自动挑选，设置页卡片可直接选择。
-- **已知依赖**：自动转述的改写发生在宿主 `agent/pre-step` 事件（每步消息进入模型前），贴图准入依赖 `resolveModelInfo` 行为；宿主大版本升级后若贴图行为异常，应重审本节（当前在 DSH 0.2.1-alpha.1 验证）。
-- **排障**：贴图后模型仍收到占位文本时，先在已登录 DSH 的浏览器里打开 `<DSH Web 地址>/antigravity/api/doctor`（GET，或直接运行 `/antigravity-doctor`），查看返回里的 vision 三行（`visionEnabled` / `visionBridge` / `visionShim`）。`visionBridge=registered` 且 `visionShim=installed` 即为正常。`visionBridge=dropped` 表示桥注册成功后已从事件总线消失（issue #7 的故障签名），重启宿主或重载插件可恢复。服务端日志里，`[Antigravity Pool Vision]` 前缀的行按三行一组记录判定：`request`（带图步骤进入桥）、`model gate`（主模型是否纯文本）、`rewrote` 或 `passthrough`（改写结果或放行原因）。判读：零前缀行＝事件没有到达桥；`rewrote` 已出现但模型仍收到占位文本＝改写未生效，应提 issue 并附日志。注意两点：其一，v0.8.0 时代桥挂在 `llm/stream`，改写会在宿主事件链中被丢弃，日志出现 `rewrote` 不等于模型收到转述；该缺陷已修复，判读时以模型回答为准。其二，工具结果里的图片块（如宿主 `read_image` 的返回）不经桥改写，保持占位文本加 `antigravity_read_image` 回退，这是设计内的备用路径。
-- **接口鉴权**：`/antigravity/api` 前缀与宿主自有 `/api` 通道走同一准入栅栏（Host/Origin 信任检查 + DSH 浏览器会话认证）。未携带 DSH 会话的请求收到 401，跨源请求收到 403；设置页与已登录浏览器不受影响。Google 登录的 OAuth 回调走独立本地端口，与此栅栏无关。
+- **已知依赖**：自动转述依赖宿主 `llm/stream` 事件、贴图准入依赖 `resolveModelInfo` 行为，宿主大版本升级后若贴图行为异常，需重审本节（当前在 DSH 0.2.0-rc.2 验证）。
+- **排障**：贴图后模型仍收到占位文本时，先运行 `/antigravity-doctor`，查看 `visionBridge` / `visionShim` 两行。两行显示 `registered` + `installed` 即为正常。服务端日志里，`[Antigravity Pool Vision]` 前缀的行记录桥的每一步判定（请求进入、模型判定、改写结果或放行原因）。贴图后一条前缀行都没有，说明事件没有到达桥。
 
 ## 🤖 模型一览
 
@@ -192,6 +191,37 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 | Claude Opus 4.6 · Claude Sonnet 4.6 · GPT-OSS 120B | Claude & GPT |
 
 同一额度池内共享每周与 5 小时额度；额度按 token 成本比例消耗，越重的模型消耗越快。
+
+## 🧭 架构
+
+```mermaid
+flowchart LR
+  subgraph HOST["DSH 宿主"]
+    LLM["llm/stream 请求流"]
+    SEL["模型选择器 / 设置页"]
+  end
+  subgraph PLUGIN["dsh-gemini-pool"]
+    CORE["插件主体<br/>命令与 API 路由"]
+    POOL["账号池管理<br/>调度 · 冷却 · 探活"]
+    VB["视觉旁路桥<br/>图片转文字"]
+    TOOLS["工具集<br/>read_image · image_generate"]
+  end
+  STORE[("凭证存储<br/>antigravity-pool-accounts.json")]
+  GOOGLE["Google Antigravity API"]
+
+  SEL --> CORE
+  LLM --> VB --> POOL
+  CORE --> POOL
+  TOOLS --> GOOGLE
+  POOL --> GOOGLE
+  POOL --> STORE
+```
+
+请求经宿主进入插件：视觉旁路桥改写无视觉模型的图片请求，账号池按调度策略选号并处理 429 冷却与探活，全部调用进程内直达 Google 官方端点。
+
+<p align="center">
+  <img src="./assets/images/panel.gif" alt="请求流动态演示（动画数字为示意）" width="72%">
+</p>
 
 ## 🤝 贡献
 
