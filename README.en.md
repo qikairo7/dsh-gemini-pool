@@ -88,7 +88,7 @@ The relay has one real advantage: **bans hit the operator's accounts, yours stay
 
 ## 🚀 Quick Start
 
-**Requirements**: DSH 0.2.0-rc.2, the version this release is tested against (`dsh --version` to check yours).
+**Requirements**: DSH 0.2.0-rc.2, the version this release is tested against; the vision-bypass path is additionally verified on 0.2.1-alpha.1 (`dsh --version` to check yours).
 
 **1. Install the plugin**
 
@@ -166,8 +166,8 @@ When the main model cannot see images (e.g. a text-only model), a Gemini model f
 
 - **Data flow**: images are processed through Google accounts in the pool, sharing quota with chat and image generation.
 - **On by default**. To turn it off (any one of these): set the environment variable `ANTIGRAVITY_VISION_ENABLED=false`; or toggle it off in the Settings · Vision Bypass card; or set `visionEnabled: false` in accounts.json via `/antigravity/api/config`. The switch governs both image admission and automatic description; with it off, pasting behaves exactly as the host does out of the box. `visionModel` picks the describing model — leave it empty for automatic selection, or pick one in the Settings card.
-- **Known dependency**: automatic description relies on the host's `llm/stream` event and image admission on `resolveModelInfo`. If pasting images misbehaves after a major host upgrade, revisit this section (verified against DSH 0.2.0-rc.2).
-- **Troubleshooting**: if the model still receives a placeholder after pasting an image, run `/antigravity-doctor` and check the `visionBridge` / `visionShim` lines (`registered` + `installed` is the healthy state). Server log lines prefixed `[Antigravity Pool Vision]` record every bridge decision (request entry, model gate, rewrite result or passthrough reason); zero prefixed lines after a paste means the event never reached the bridge.
+- **Known dependency**: automatic description rewrites each step's newly claimed messages on the host's `agent/pre-step` event (right before they enter the model), and image admission relies on `resolveModelInfo`. If pasting images misbehaves after a major host upgrade, revisit this section (verified against DSH 0.2.1-alpha.1).
+- **Troubleshooting**: if the model still receives a placeholder after pasting an image, open `<DSH web URL>/antigravity/api/doctor` (GET) in a browser logged in to DSH and check the `visionBridge` / `visionShim` lines in the response (`registered` + `installed` is the healthy state). `visionBridge=dropped` means the bridge registered but is no longer on the event bus (the issue #7 failure signature); restarting the host or reloading the plugin can restore it. Server log lines prefixed `[Antigravity Pool Vision]` come as a three-line group: `request` (an image-carrying step reached the bridge), `model gate` (text-only verdict), then `rewrote` or `passthrough` (rewrite result or pass reason). Zero prefixed lines means the event never reached the bridge; a `rewrote` line while the model still sees a placeholder means the rewrite did not land — file an issue with the logs. Two caveats. First, in the v0.8.0 era the bridge rode `llm/stream`, where the host's event chain silently discarded rewrites, so a `rewrote` line never proved the model received the description; that defect is fixed — judge by the model's answer. Second, image blocks inside tool results (e.g. the host `read_image` return) do not pass through the bridge; they keep the placeholder plus the `antigravity_read_image` fallback, by design.
 
 ## 🤖 Models
 
