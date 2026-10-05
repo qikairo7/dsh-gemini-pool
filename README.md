@@ -173,6 +173,7 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
   开关同时控制贴图准入与自动转述；关闭后，贴图行为恢复宿主原样。`visionModel` 指定代看模型；留空则自动挑选，设置页卡片可直接选择。
 - **已知依赖**：自动转述的改写发生在宿主 `agent/pre-step` 事件（每步消息进入模型前），贴图准入依赖 `resolveModelInfo` 行为；宿主大版本升级后若贴图行为异常，应重审本节（当前在 DSH 0.2.1-alpha.1 验证）。
 - **排障**：贴图后模型仍收到占位文本时，先在已登录 DSH 的浏览器里打开 `<DSH Web 地址>/antigravity/api/doctor`（GET，或直接运行 `/antigravity-doctor`），查看返回里的 vision 三行（`visionEnabled` / `visionBridge` / `visionShim`）。`visionBridge=registered` 且 `visionShim=installed` 即为正常。`visionBridge=dropped` 表示桥注册成功后已从事件总线消失（issue #7 的故障签名），重启宿主或重载插件可恢复。服务端日志里，`[Antigravity Pool Vision]` 前缀的行按三行一组记录判定：`request`（带图步骤进入桥）、`model gate`（主模型是否纯文本）、`rewrote` 或 `passthrough`（改写结果或放行原因）。判读：零前缀行＝事件没有到达桥；`rewrote` 已出现但模型仍收到占位文本＝改写未生效，应提 issue 并附日志。注意两点：其一，v0.8.0 时代桥挂在 `llm/stream`，改写会在宿主事件链中被丢弃，日志出现 `rewrote` 不等于模型收到转述；该缺陷已修复，判读时以模型回答为准。其二，工具结果里的图片块（如宿主 `read_image` 的返回）不经桥改写，保持占位文本加 `antigravity_read_image` 回退，这是设计内的备用路径。
+- **接口鉴权**：`/antigravity/api` 前缀与宿主自有 `/api` 通道走同一准入栅栏（Host/Origin 信任检查 + DSH 浏览器会话认证）。未携带 DSH 会话的请求收到 401，跨源请求收到 403；设置页与已登录浏览器不受影响。Google 登录的 OAuth 回调走独立本地端口，与此栅栏无关。
 
 ## 🤖 模型一览
 
