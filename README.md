@@ -1,10 +1,10 @@
 <div align="center">
 
-### dsh-gemini-pool
+# dsh-gemini-pool
 
 **DSH 用上 Gemini 的方式 —— 让你的 Google AI Pro 订阅，成为编程模型池**
 
-[English](./README.en.md) · 简体中文
+[English](./README.en.md) · **简体中文**
 
 <a href="https://github.com/qikairo7/dsh-gemini-pool/releases"><img src="https://img.shields.io/github/v/release/qikairo7/dsh-gemini-pool?color=369eff&labelColor=black&logo=github&style=flat-square" alt="release"></a>
 <a href="https://github.com/qikairo7/dsh-gemini-pool/stargazers"><img src="https://img.shields.io/github/stars/qikairo7/dsh-gemini-pool?color=ffcb47&labelColor=black&style=flat-square" alt="stars"></a>
@@ -13,8 +13,8 @@
 <a href="https://github.com/qikairo7/dsh-gemini-pool/commits/master"><img src="https://img.shields.io/github/last-commit/qikairo7/dsh-gemini-pool?color=c4f042&labelColor=black&style=flat-square" alt="last commit"></a>
 <a href="https://github.com/qikairo7/dsh-gemini-pool/actions/workflows/check.yml"><img src="https://img.shields.io/github/actions/workflow/status/qikairo7/dsh-gemini-pool/check.yml?color=7ee787&labelColor=black&label=check&style=flat-square" alt="CI"></a>
 
-[GitHub](https://github.com/qikairo7/dsh-gemini-pool) ·
 [Issues](https://github.com/qikairo7/dsh-gemini-pool/issues) ·
+[讨论区](https://github.com/qikairo7/dsh-gemini-pool/discussions) ·
 [更新日志](./CHANGELOG.md) ·
 [安全策略](./SECURITY.md) ·
 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) ·
@@ -26,17 +26,15 @@
 
 ## ✨ 这是什么
 
-[DeepSeek Harness（DSH）](https://github.com/deepseek-ai/deepseek-harness) 本身无法直连 Gemini。这个插件打通了那条路：通过 Google Antigravity / Cloud Code Assist 通道，把你已有的 **Google AI Pro 订阅**直接接入 DSH —— 不用另买 API key，订阅额度即用即扣。
+[DeepSeek Harness（DSH）](https://github.com/deepseek-ai/deepseek-harness) 本身无法直连 Gemini。这个插件补上这条通路：通过 Google Antigravity / Cloud Code Assist 通道，把你已有的 **Google AI Pro 订阅**直接接入 DSH。不用另买 API key，订阅额度即用即扣。
 
 Gemini 的强项正好落在编程场景上：**多模态**看图、**前端与 UI** 代码生成质量出色，还能**生图**做界面素材。装上插件后，这些能力按订阅额度直接在 DSH 里使用。
 
-不止一个 Google 账号？全部加进来组成**账号池**：额度自动均衡、429 无感切换、坏号自动冷却与探活恢复。设置页里每个账号一张卡片，每周与 5 小时额度实时可见。
+不止一个 Google 账号？全部加进来组成**账号池**：额度自动均衡、429 无感切换、坏账号自动冷却与探活恢复。设置页里每个账号一张卡片，每周与 5 小时额度实时可见。
 
 <p align="center">
   <img src="./assets/images/screenshots/settings-1.png" alt="dsh-gemini-pool 设置页" width="78%">
 </p>
-
----
 
 ## 🆚 为什么需要它
 
@@ -55,8 +53,6 @@ Gemini 的强项正好落在编程场景上：**多模态**看图、**前端与 
 
 > 使用本插件前，请先阅读下方的「⚠️ 封号风险」。
 
----
-
 ## ⚠️ 封号风险，使用前必读
 
 本插件是非官方第三方工具，通过复用 Antigravity 客户端身份访问 Google 接口。**Google 已官方确认：使用第三方工具访问 Antigravity 资源属于服务条款违规，并已实施过大规模封禁**（见 [gemini-cli 官方公告](https://github.com/google-gemini/gemini-cli/discussions/20632)，2026 年 2 月，付费用户亦被波及）。
@@ -70,15 +66,13 @@ Gemini 的强项正好落在编程场景上：**多模态**看图、**前端与 
 
 **降低风险的三条建议**：
 
-1. **用小号**——专门注册的 Google 账号，不要用绑着重要资产的主力号
-2. **克制用量**——内置的指数退避与冷却机制有助于此，但别刻意压测额度上限
-3. **做好通道随时失效的准备**——接口是 Google 的，政策随时可能收紧
+1. **用小号**：专门注册一个 Google 账号。不要用绑着重要资产的主力号。
+2. **克制用量**：内置的指数退避与冷却机制能降低风险。不要刻意压测额度上限。
+3. **做好通道随时失效的准备**：接口属于 Google，政策随时可能收紧。
 
 使用本插件即表示你已理解并自愿接受上述风险。本项目与 Google 无任何关联。
 
----
-
-## 🆚 和 API 中转站有什么区别
+## 💰 和 API 中转站有什么区别
 
 也可以去中转站按 token 付费买 Gemini API——那是另一种取舍：
 
@@ -87,37 +81,35 @@ Gemini 的强项正好落在编程场景上：**多模态**看图、**前端与 
 | **钱** | 按 token 加价，站长赚差价 | 订阅费固定，用多少都是那份钱 |
 | **模型真假** | ⚠️ 可能被悄悄降级，难察觉 | ✅ 直连官方端点，模型永远是真的 |
 | **数据隐私** | ⚠️ 代码/对话/截图全部经过站长服务器 | ✅ 进程内直连 Google，不经过任何中间人 |
-| **额度透明** | 只剩一个"站点余额"数字 | 每账号每周 / 5 小时实时进度条 |
+| **额度透明** | 只剩一个「站点余额」数字 | 每账号每周 / 5 小时实时进度条 |
 | **跑路风险** | 站点跑路降质是常态，余额一夜清零 | 无第三方经手你的钱 |
 
-中转站的真实优势只有一条：**封号砸的是站长的号，你的账号干净**。所以分界线很简单——怕账号出事、用量小、想试用，选中转站；有订阅、重隐私、要真模型、长期用，选这里。
-
----
+中转站的真实优势只有一条：**封号砸的是站长的号，你的账号干净**。所以分界线很简单：怕账号出事、用量小、想试用，选中转站；有订阅、重隐私、要真模型、长期用，选这里。
 
 ## 🚀 快速开始
 
-**环境要求**：DSH 0.2.0-rc.2（当前验证版本，`dsh --version` 查看）。
+**环境要求**：DSH 0.2.0-rc.2（当前验证版本）。运行 `dsh --version` 查看本机版本。
 
 **1. 安装插件**
 
-```sh
+```bash
 dsh plugin --profile web add github:qikairo7/dsh-gemini-pool
 ```
 
 **2. 登录 Google 账号**
 
-打开 DSH 设置 → **Antigravity** → 点击「＋ 添加 Google 账号」完成授权。想加几个加几个。
+打开 DSH 设置 → **Antigravity** → 点击「＋ 添加 Google 账号」完成授权。账号数量不限。
 
 **3. 完成**
 
-模型选择器里勾选要用的模型，直接开聊。额度刷新、账号调度全部自动。
+模型选择器里勾选要用的模型，开始对话。额度刷新、账号调度全部自动。
 
-用的模型看不了图？也能贴——图片会由池内 Gemini 自动转述给当前模型（默认开启，见「👁 无视觉主模型的看图旁路」）。
+用的模型看不了图？也能贴图。图片会由池内 Gemini 自动转述给当前模型（默认开启，见「👁 无视觉主模型的看图旁路」）。
 
 <details>
 <summary><kbd>离线安装 / 手动安装</kbd></summary>
 
-```sh
+```bash
 npm run pack:dist
 # 包名带 package.json 里的当前版本号，按 dist/ 下实际生成的文件名安装
 dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
@@ -133,8 +125,6 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 
 </details>
 
----
-
 ## 💧 账号池与调度
 
 三种调度策略，设置页一键切换：
@@ -145,11 +135,9 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 
 凭证存储在 `$DSH_HOME/storages/antigravity-pool-accounts.json`，包含 access 与 refresh token，请妥善保管。旧版单账号凭证升级时自动迁移，无需重新登录。
 
----
-
 ## 🧊 冷却与自愈
 
-账号遇到 429 后自动进入指数退避冷却，连续失败达阈值则禁用并转入后台探活，额度恢复即自动回归，全程无需人工干预。
+账号遇到 429 后自动进入指数退避冷却。连续失败达到阈值时，插件禁用该账号并转入后台探活。额度恢复后账号自动回归，全程无需人工干预。
 
 | 参数 | 默认值 | 说明 |
 |---|---|---|
@@ -160,30 +148,29 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 
 被禁用的账号在设置页显示红色标签，可点「重新启用」一键恢复。以上参数均可在设置页「冷却与恢复」折叠区调整。
 
----
-
 ## 👁 无视觉主模型的看图旁路
 
 主模型不支持看图时（如纯文本模型），贴图由池内 Gemini 代看后以文字回喂，分两条路：
 
-- **自动转述（主路径，无感）**：贴图后插件在发往模型的请求里把图片替换为池内 Gemini 的文字转述，主模型直接读到描述，无需任何操作。同一张图只转述一次（进程内缓存），会话历史里反复出现的图不重复消耗额度；转述附原始图片哈希，转述失败自动退回宿主占位路径，不会阻塞对话。
-- **`antigravity_read_image` 工具（兜底）**：想对某张图细看时，主模型可显式调用（参数为转述文本里的哈希前缀，也接受工作区内本地路径 / data: URL / http(s) 公网图片链接），实时重新转述。
+- **自动转述（主路径，无感）**：贴图后，插件把发往模型的请求里的图片替换为池内 Gemini 的文字转述。主模型直接读到文字描述，无需任何操作。同一张图只转述一次（进程内缓存）；会话历史里反复出现的图不重复消耗额度。转述附带原始图片哈希。转述失败时自动退回宿主占位路径，不阻塞对话。
+- **`antigravity_read_image` 工具（备用路径）**：想对某张图细看时，主模型可显式调用（参数为转述文本里的哈希前缀，也接受工作区内本地路径 / data: URL / http(s) 公网图片链接），实时重新转述。
 
 - **数据流向**：图片会经池内 Google 账号处理，与对话 / 生图同池同额度。
-- **默认开启**，关闭方式（任选其一）：设置环境变量 `ANTIGRAVITY_VISION_ENABLED=false`；或在设置页 · 视觉旁路卡片一键关闭；或经 `/antigravity/api/config` 在 accounts.json 里配 `visionEnabled: false`。开关同时控制贴图准入与自动转述，关闭后贴图行为恢复宿主原样。`visionModel` 指定代看模型，留空则自动挑选，设置页卡片可直接选择。
-- **已知依赖**：自动转述依赖宿主 `llm/stream` 事件、贴图准入依赖 `resolveModelInfo` 行为，宿主大版本升级后若贴图行为异常，需重审本节（当前在 DSH 0.2.0-rc.2 验证）。
-- **排障**：贴图后模型仍收到占位文本时，先跑 `/antigravity-doctor` 看 `visionBridge` / `visionShim` 两行（`registered` + `installed` 是正常）；服务端日志里 `[Antigravity Pool Vision]` 前缀的行会记录桥的每一步判定（请求进入、模型判定、改写结果或放行原因），贴图后一条前缀行都没有，说明事件没有到达桥。
+- **默认开启**。关闭方式任选其一：
+  - 设置环境变量 `ANTIGRAVITY_VISION_ENABLED=false`
+  - 在设置页「视觉旁路」卡片一键关闭
+  - 经 `/antigravity/api/config` 在 accounts.json 里配置 `visionEnabled: false`
 
----
+  开关同时控制贴图准入与自动转述；关闭后，贴图行为恢复宿主原样。`visionModel` 指定代看模型；留空则自动挑选，设置页卡片可直接选择。
+- **已知依赖**：自动转述依赖宿主 `llm/stream` 事件、贴图准入依赖 `resolveModelInfo` 行为，宿主大版本升级后若贴图行为异常，需重审本节（当前在 DSH 0.2.0-rc.2 验证）。
+- **排障**：贴图后模型仍收到占位文本时，先运行 `/antigravity-doctor`，查看 `visionBridge` / `visionShim` 两行。两行显示 `registered` + `installed` 即为正常。服务端日志里，`[Antigravity Pool Vision]` 前缀的行记录桥的每一步判定（请求进入、模型判定、改写结果或放行原因）。贴图后一条前缀行都没有，说明事件没有到达桥。
 
 ## 🤖 模型一览
 
 设置页勾选即用，已勾选的模型自动置顶，每个模型实时显示池内最高可用额度。
 
-<p>
+<p align="center">
   <img src="./assets/images/screenshots/settings-2.png" alt="调度策略与模型选择器" width="45%">
-</p>
-<p>
   <img src="./assets/images/screenshots/settings-3.png" alt="默认生图配置" width="45%">
 </p>
 
@@ -194,12 +181,19 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 | Gemini 3 Flash · Gemini 2.5 Pro / Flash | Gemini |
 | Claude Opus 4.6 · Claude Sonnet 4.6 · GPT-OSS 120B | Claude & GPT |
 
-同一额度池内共享每周与 5 小时额度；额度按 token 成本比例消耗，越重的模型烧得越快。
+同一额度池内共享每周与 5 小时额度；额度按 token 成本比例消耗，越重的模型消耗越快。
 
----
+## 🤝 贡献
+
+欢迎 [Issue](https://github.com/qikairo7/dsh-gemini-pool/issues) 与 [PR](https://github.com/qikairo7/dsh-gemini-pool/pulls)，用法与想法也可以到 [讨论区](https://github.com/qikairo7/dsh-gemini-pool/discussions) 交流。提交前请先跑通本地检查：
+
+```bash
+npm install    # 安装依赖
+npm run check  # 语法检查 + 测试
+```
 
 ## 📄 许可证与致谢
 
-[MIT](./LICENSE)。
+本项目基于 [MIT License](./LICENSE) 授权。
 
 基于 [@LiZhenNet](https://github.com/LiZhenNet) 的 [dsh-antigravity](https://github.com/LiZhenNet/dsh-antigravity) 构建，感谢 [@Lukeknow0](https://github.com/Lukeknow0)、[@miuzel](https://github.com/miuzel)、[@grloper](https://github.com/grloper)、[@sereineele](https://github.com/sereineele) 的社区贡献。

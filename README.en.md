@@ -1,10 +1,10 @@
 <div align="center">
 
-### dsh-gemini-pool
+# dsh-gemini-pool
 
 **The way to use Gemini in DSH — turn your Google AI Pro subscription into a coding model pool**
 
-English · [简体中文](./README.md)
+**English** · [简体中文](./README.md)
 
 <a href="https://github.com/qikairo7/dsh-gemini-pool/releases"><img src="https://img.shields.io/github/v/release/qikairo7/dsh-gemini-pool?color=369eff&labelColor=black&logo=github&style=flat-square" alt="release"></a>
 <a href="https://github.com/qikairo7/dsh-gemini-pool/stargazers"><img src="https://img.shields.io/github/stars/qikairo7/dsh-gemini-pool?color=ffcb47&labelColor=black&style=flat-square" alt="stars"></a>
@@ -13,8 +13,8 @@ English · [简体中文](./README.md)
 <a href="https://github.com/qikairo7/dsh-gemini-pool/commits/master"><img src="https://img.shields.io/github/last-commit/qikairo7/dsh-gemini-pool?color=c4f042&labelColor=black&style=flat-square" alt="last commit"></a>
 <a href="https://github.com/qikairo7/dsh-gemini-pool/actions/workflows/check.yml"><img src="https://img.shields.io/github/actions/workflow/status/qikairo7/dsh-gemini-pool/check.yml?color=7ee787&labelColor=black&label=check&style=flat-square" alt="CI"></a>
 
-[GitHub](https://github.com/qikairo7/dsh-gemini-pool) ·
 [Issues](https://github.com/qikairo7/dsh-gemini-pool/issues) ·
+[Discussions](https://github.com/qikairo7/dsh-gemini-pool/discussions) ·
 [Changelog](./CHANGELOG.md) ·
 [Security](./SECURITY.md) ·
 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) ·
@@ -36,8 +36,6 @@ Have more than one Google account? Add them all to a **pool**: quotas balance ac
   <img src="./assets/images/screenshots/settings-1.png" alt="dsh-gemini-pool settings page" width="78%">
 </p>
 
----
-
 ## 🆚 Why you need it
 
 Installing this plugin changes what your Google AI Pro subscription can do:
@@ -54,8 +52,6 @@ Installing this plugin changes what your Google AI Pro subscription can do:
 When the main model itself has no vision (text-only), pasted images are automatically described in text by a Gemini model from the pool and fed back to the main model. On by default — see "👁 Vision bypass for text-only main models".
 
 > Read "⚠️ Account Ban Risk" below before installing.
-
----
 
 ## ⚠️ Account Ban Risk — Read Before Installing
 
@@ -76,9 +72,7 @@ This is an unofficial third-party tool. It reaches Google endpoints by reusing t
 
 Using this plugin means you understand and accept these risks. This project is not affiliated with Google.
 
----
-
-## 🆚 How is this different from API relays
+## 💰 How is this different from API relays
 
 You can also pay a relay for Gemini API access by the token. That is a different trade:
 
@@ -92,15 +86,13 @@ You can also pay a relay for Gemini API access by the token. That is a different
 
 The relay has one real advantage: **bans hit the operator's accounts, yours stays clean**. The line is simple — account safety first, light usage, or just trying things out: use a relay. Already subscribed, privacy-conscious, want the real models long-term: use this.
 
----
-
 ## 🚀 Quick Start
 
 **Requirements**: DSH 0.2.0-rc.2, the version this release is tested against (`dsh --version` to check yours).
 
 **1. Install the plugin**
 
-```sh
+```bash
 dsh plugin --profile web add github:qikairo7/dsh-gemini-pool
 ```
 
@@ -117,7 +109,7 @@ Your model can't see images? Paste anyway — a pool Gemini describes them to it
 <details>
 <summary><kbd>Offline / manual install</kbd></summary>
 
-```sh
+```bash
 npm run pack:dist
 # the package name carries the current version from package.json; install the file actually generated under dist/
 dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
@@ -133,8 +125,6 @@ If your DSH does not support `dsh plugin add`, copy the package into `$DSH_HOME/
 
 </details>
 
----
-
 ## 💧 Account Pool & Scheduling
 
 Three strategies, one click to switch in Settings:
@@ -144,8 +134,6 @@ Three strategies, one click to switch in Settings:
 - **Manual**: lock to one account for debugging or dedicated runs
 
 Credentials are stored in `$DSH_HOME/storages/antigravity-pool-accounts.json`, including access and refresh tokens. Keep that file private. Legacy single-account credentials migrate automatically on upgrade, so you do not have to sign in again.
-
----
 
 ## 🧊 Cooldown & Self-healing
 
@@ -160,8 +148,6 @@ An account that hits 429 enters exponential-backoff cooldown. Repeated failures 
 
 Disabled accounts carry a red tag in Settings and a one-click "Re-enable" button. All of these parameters are adjustable in the "Cooldown & Recovery" section.
 
----
-
 ## 👁 Vision bypass for text-only main models
 
 When the main model cannot see images (e.g. a text-only model), a Gemini model from the pool looks at them and answers in text, through two paths:
@@ -174,16 +160,12 @@ When the main model cannot see images (e.g. a text-only model), a Gemini model f
 - **Known dependency**: automatic description relies on the host's `llm/stream` event and image admission on `resolveModelInfo`. If pasting images misbehaves after a major host upgrade, revisit this section (verified against DSH 0.2.0-rc.2).
 - **Troubleshooting**: if the model still receives a placeholder after pasting an image, run `/antigravity-doctor` and check the `visionBridge` / `visionShim` lines (`registered` + `installed` is the healthy state). Server log lines prefixed `[Antigravity Pool Vision]` record every bridge decision (request entry, model gate, rewrite result or passthrough reason); zero prefixed lines after a paste means the event never reached the bridge.
 
----
-
 ## 🤖 Models
 
 Tick a model in Settings to enable it. Enabled models float to the top, each showing the highest available quota in the pool.
 
-<p>
+<p align="center">
   <img src="./assets/images/screenshots/settings-2.png" alt="Dispatch strategy and model selector" width="45%">
-</p>
-<p>
   <img src="./assets/images/screenshots/settings-3.png" alt="Image generation defaults" width="45%">
 </p>
 
@@ -196,10 +178,17 @@ Tick a model in Settings to enable it. Enabled models float to the top, each sho
 
 Models in the same pool share the weekly and 5-hour quotas. Quota drains in proportion to token cost, so heavier models run out faster.
 
----
+## 🤝 Contributing
+
+Issues and PRs are welcome, and so are conversations in [Discussions](https://github.com/qikairo7/dsh-gemini-pool/discussions). Please run the local checks before opening a PR:
+
+```bash
+npm install    # install dependencies
+npm run check  # syntax checks + tests
+```
 
 ## 📄 License & Credits
 
-[MIT](./LICENSE).
+This project is licensed under the [MIT License](./LICENSE).
 
 Built on [dsh-antigravity](https://github.com/LiZhenNet/dsh-antigravity) by [@LiZhenNet](https://github.com/LiZhenNet), with community contributions from [@Lukeknow0](https://github.com/Lukeknow0), [@miuzel](https://github.com/miuzel), [@grloper](https://github.com/grloper) and [@sereineele](https://github.com/sereineele).
