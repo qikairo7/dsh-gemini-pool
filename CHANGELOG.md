@@ -7,8 +7,10 @@
 ### Fixed
 - **自动看图桥接改写蒸发，模型始终收到占位文本（Refs #7，断点⑤）**：桥原挂在宿主 `llm/stream` 事件，监听器把改写后的消息作为 `next()` 参数传递；而 cordis waterfall 的 `next` 是零参闭包（监听器传入的参数被静默丢弃），`llm/stream` 内建又闭包捕获原始请求、忽略一切调用参数——改写从未到达 provider。日志层 `rewrote` 行照常出现，成为假阳性；历史「隔离环境正常」实为 `antigravity_read_image` 工具回退被误归因。修复：桥迁至 `agent/pre-step`（沿用宿主 `installModelSelection` 的「`await next()` 后改写、返回新 decision」模式，宿主消费返回值并随会话持久化）。`isEnabled` / `isTextOnlyModel` 门、池转述调用、进程内缓存、fail-open、决策链日志语义全部保留；`antigravity_read_image` 工具路径不变。覆盖边界：贴图（本步新输入）走桥；工具结果图片块（如宿主 `read_image` 返回）不经桥，保持占位文本加工具回退
 - `/antigravity-doctor` 的 `visionBridge` 行改为读取时实时探测事件总线：`registered`＝桥此刻在线；新增 `dropped`＝注册成功后已从总线消失（issue #7 故障签名），重启宿主或重载插件可恢复；总线布局不可读（宿主漂移）时回退注册簿记值，不误报
+- README 排障段措辞修正：doctor 返回的 vision 状态是三行（含 `visionEnabled`），原文「查看两行」已改为「vision 三行」（中英同步）
 
 ### Added
+- **对话命令真实注册（兑现 README 命令表）**：`/antigravity-login`、`/antigravity-quota`、`/antigravity-doctor`、`/antigravity-logout` 此前只是文档承诺——宿主 `commands` 注册表里从未挂载（与 PR #9 补齐的 doctor 路由同类的文档-代码缺口）。现经宿主 `commands` 服务真实注册，handler 复用 web API 路由的同款进程内函数（单一代码路径，无 HTTP 往返）：login 返回授权链接、quota 刷新并按账号列额度、doctor 返回自检全文、logout 须显式带 `confirm` 参数（防误触移除全部凭证）。宿主未提供 `commands` 服务时优雅降级：不注册、不影响插件加载，web API 与 `antigravity-login` CLI 仍可用（中英 README 命令表同步更新）
 - `/antigravity-doctor` 可调用入口（Refs #7）：`GET /antigravity/api/doctor` 返回 doctor 全文（含 `visionEnabled` / `visionBridge` / `visionShim` 三行），只读、拒绝非 GET。README 排障段此前让用户「运行 /antigravity-doctor」，但路由表从未提供该入口（PR #8 遗留缺口），现已按真实入口改写调用说明（中英同步）；快速开始版本口径同步如实区分（整包 0.2.0-rc.2 / 视觉路径另在 0.2.1-alpha.1 验证）
 - 看图桥接决策链可观测（Refs #7）：桥在每条异步路径输出一行判定日志（请求进入、模型判定、改写结果或放行原因），贴图后服务端日志里零 `[Antigravity Pool Vision]` 前缀行，就是「事件没有到达桥」的直接证据；模型判定 resolver 的 unavailable / error 两态、shim 安装结果全部落日志；`/antigravity-doctor` 新增 `visionEnabled` / `visionBridge` / `visionShim` 三行组装状态；池 init 失败不再静默（记入 doctor 状态并告警）。纯观测改动：桥所有分支的判定与放行行为与 v0.8.0 等价（根因修复见上方 Fixed）
 
@@ -16,6 +18,7 @@
 - `npm run check` 84/84（v0.8.0 基线 75 项全保留 + 新增 9 项：决策日志契约、四种失败注入读出两两可区分、doctor 段）；两处 mutation 反证（入口正向控制日志、doctor vision 行）先红后恢复；semgrep 1 findings 为 v0.8.0 已记录的 buildModelMatchRegex 基线项，本次新增代码零 findings
 - 桥迁移（Fixed）验证：`npm run check` 87/87（pre-step 契约全套重写：enter 改写 / reject 与无图与非纯文本透传 / gate 抛错 / 缓存与并发 / fail-open；存活探针回归含真实 cordis 注册→注销翻转）；隔离 web 副本（DSH 0.2.1-alpha.1）GUI 贴图端到端：决策链三行日志、用户消息持久化为池转述、模型零工具调用直答内容与测试图真实几何吻合，轨迹解码确认模型侧无占位文本
 - doctor 入口（Added）验证：`npm run check` 88/88（新增路由测试：GET `/antigravity/api/doctor` 返回含三行状态、非 GET 405）
+- 对话命令（Added）验证：`npm run check` 全绿（新增 `test/commands.test.mjs` 8 项：四命令注册与统一注销、无 commands 服务不抛错、login 展示授权链接、quota 逐账号刷新并触发适配器更新与额度行渲染、空池引导文案、doctor 原文透传、logout 无 confirm 拒绝且 confirm 后全量移除、handler 异常沉降为 error 结果）
 
 ## v0.8.0 — 2026-10-01
 

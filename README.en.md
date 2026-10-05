@@ -133,14 +133,14 @@ Three strategies, one click to switch in Settings:
 - **Primary & backup**: fixed primary account, automatic switch when its quota runs out
 - **Manual**: lock to one account for debugging or dedicated runs
 
-Day-to-day operations run as chat commands:
+Day-to-day operations run as chat commands (registered through the host `commands` service; on hosts without that service they are not registered — use the settings page, the `/antigravity/api` routes, or the `antigravity-login` CLI instead):
 
 | Command | What it does |
 |---|---|
-| `/antigravity-login` | sign in with a Google account |
-| `/antigravity-quota` | show per-account quota |
+| `/antigravity-login` | sign in with a Google account (returns the consent URL; the account joins the pool automatically) |
+| `/antigravity-quota` | refresh and show per-account quota |
 | `/antigravity-doctor` | run self-diagnostics (vision troubleshooting below) |
-| `/antigravity-logout` | sign out and remove stored credentials |
+| `/antigravity-logout confirm` | sign out and remove ALL stored credentials (the `confirm` argument is required as a guard) |
 
 Credentials are stored in `$DSH_HOME/storages/antigravity-pool-accounts.json`, including access and refresh tokens. Keep that file private. Legacy single-account credentials migrate automatically on upgrade, so you do not have to sign in again.
 
@@ -167,7 +167,7 @@ When the main model cannot see images (e.g. a text-only model), a Gemini model f
 - **Data flow**: images are processed through Google accounts in the pool, sharing quota with chat and image generation.
 - **On by default**. To turn it off (any one of these): set the environment variable `ANTIGRAVITY_VISION_ENABLED=false`; or toggle it off in the Settings · Vision Bypass card; or set `visionEnabled: false` in accounts.json via `/antigravity/api/config`. The switch governs both image admission and automatic description; with it off, pasting behaves exactly as the host does out of the box. `visionModel` picks the describing model — leave it empty for automatic selection, or pick one in the Settings card.
 - **Known dependency**: automatic description rewrites each step's newly claimed messages on the host's `agent/pre-step` event (right before they enter the model), and image admission relies on `resolveModelInfo`. If pasting images misbehaves after a major host upgrade, revisit this section (verified against DSH 0.2.1-alpha.1).
-- **Troubleshooting**: if the model still receives a placeholder after pasting an image, open `<DSH web URL>/antigravity/api/doctor` (GET) in a browser logged in to DSH and check the `visionBridge` / `visionShim` lines in the response (`registered` + `installed` is the healthy state). `visionBridge=dropped` means the bridge registered but is no longer on the event bus (the issue #7 failure signature); restarting the host or reloading the plugin can restore it. Server log lines prefixed `[Antigravity Pool Vision]` come as a three-line group: `request` (an image-carrying step reached the bridge), `model gate` (text-only verdict), then `rewrote` or `passthrough` (rewrite result or pass reason). Zero prefixed lines means the event never reached the bridge; a `rewrote` line while the model still sees a placeholder means the rewrite did not land — file an issue with the logs. Two caveats. First, in the v0.8.0 era the bridge rode `llm/stream`, where the host's event chain silently discarded rewrites, so a `rewrote` line never proved the model received the description; that defect is fixed — judge by the model's answer. Second, image blocks inside tool results (e.g. the host `read_image` return) do not pass through the bridge; they keep the placeholder plus the `antigravity_read_image` fallback, by design.
+- **Troubleshooting**: if the model still receives a placeholder after pasting an image, open `<DSH web URL>/antigravity/api/doctor` (GET, or just run `/antigravity-doctor`) in a browser logged in to DSH and check the three vision lines (`visionEnabled` / `visionBridge` / `visionShim`) in the response (`visionBridge=registered` plus `visionShim=installed` is the healthy state). `visionBridge=dropped` means the bridge registered but is no longer on the event bus (the issue #7 failure signature); restarting the host or reloading the plugin can restore it. Server log lines prefixed `[Antigravity Pool Vision]` come as a three-line group: `request` (an image-carrying step reached the bridge), `model gate` (text-only verdict), then `rewrote` or `passthrough` (rewrite result or pass reason). Zero prefixed lines means the event never reached the bridge; a `rewrote` line while the model still sees a placeholder means the rewrite did not land — file an issue with the logs. Two caveats. First, in the v0.8.0 era the bridge rode `llm/stream`, where the host's event chain silently discarded rewrites, so a `rewrote` line never proved the model received the description; that defect is fixed — judge by the model's answer. Second, image blocks inside tool results (e.g. the host `read_image` return) do not pass through the bridge; they keep the placeholder plus the `antigravity_read_image` fallback, by design.
 
 ## 🤖 Models
 
