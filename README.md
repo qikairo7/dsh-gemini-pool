@@ -125,6 +125,31 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 
 </details>
 
+## 🧱 网络环境（需要代理时）
+
+插件自身不含任何代理代码：所有 Google 请求都是进程内 `fetch`，用宿主装好的全局 HTTP 通路。宿主**只在启动时**从 harness home 的 `.env` 读取 `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `NO_PROXY`（这几个名字写在其它任何位置的 `.env` 里会被宿主直接拒绝），并据此为插件装好代理。
+
+> ⚠️ 「浏览器授权成功，但 DSH 里始终没有账号 / 刷新数据报无法获取」最常见的原因就是：代理文件放错了 home。
+
+| 你用的是 | 代理文件写在这里 |
+| --- | --- |
+| CLI（`dsh ...`） | `~/.dsh/.env` |
+| **DSH Desktop** | Windows：`%APPDATA%\dsh-desktop\harness\.env`<br>macOS：`~/Library/Application Support/dsh-desktop/harness/.env` |
+
+**桌面版有自己的 harness home，不是 `~/.dsh`**；只放 `~/.dsh/.env` 在桌面版上不会生效。（顺带：桌面版的 `$DSH_HOME` 就是上表那一格，账号文件在 `<该目录>\storages\antigravity-pool-accounts.json`。）
+
+内容三行即可，端口按自己的代理改：
+
+```bash
+HTTP_PROXY=http://127.0.0.1:7897
+HTTPS_PROXY=http://127.0.0.1:7897
+```
+
+- **写完后必须完全退出并重启 DSH**：代理只在启动时读一次，刷新页面没用。
+- 回环地址（设置页 GUI、OAuth 回调用的本地端口）由宿主自动绕过，不需要写 `NO_PROXY`。
+- 自检：登录或额度刷新失败时，如果报错里是 `UND_ERR_CONNECT_TIMEOUT` 或 `fetch failed`，基本可以断定这条路没走代理。把 `https://oauth2.googleapis.com/token` 直连与走代理各请求一次即可确认（走通会返回 `400`，因为没带请求体）。
+- 不需要、也不建议给插件加代理代码：宿主 Node 里 `import('undici')` 不可用，而进程内 `fetch` 会自动跟随宿主装的代理。
+
 ## 💧 账号池与调度
 
 三种调度策略，设置页一键切换：
@@ -142,7 +167,7 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 | `/antigravity-doctor` | 自检诊断（视觉旁路排障见下文） |
 | `/antigravity-logout` | 登出并移除账号凭证 |
 
-凭证存储在 `$DSH_HOME/storages/antigravity-pool-accounts.json`，包含 access 与 refresh token，请妥善保管。旧版单账号凭证升级时自动迁移，无需重新登录。
+凭证存储在 `$DSH_HOME/storages/antigravity-pool-accounts.json`（桌面版为 `%APPDATA%\dsh-desktop\harness\storages\...`），包含 access 与 refresh token，请妥善保管。旧版单账号凭证升级时自动迁移，无需重新登录。
 
 ## 🧊 冷却与自愈
 

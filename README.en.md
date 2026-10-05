@@ -125,6 +125,31 @@ If your DSH does not support `dsh plugin add`, copy the package into `$DSH_HOME/
 
 </details>
 
+## 🧱 Network environment (behind a proxy)
+
+The plugin contains no proxy code of its own: every Google request is an in-process `fetch` that uses the host's global HTTP path. The host reads `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `NO_PROXY` **only from the harness home's `.env`, and only once at startup** (the same names in any other `.env` are refused), then installs the proxy for the plugin from there.
+
+> ⚠️ This is the most common cause of "the browser authorized successfully, but DSH never gets the account / refreshing data fails": the proxy file was placed in the wrong home.
+
+| You run | Put the proxy in |
+| --- | --- |
+| CLI (`dsh ...`) | `~/.dsh/.env` |
+| **DSH Desktop** | Windows: `%APPDATA%\dsh-desktop\harness\.env`<br>macOS: `~/Library/Application Support/dsh-desktop/harness/.env` |
+
+**DSH Desktop has its own harness home — not `~/.dsh`**; an `~/.dsh/.env` alone has no effect there. (For the same reason, the desktop account file lives at `<that folder>\storages\antigravity-pool-accounts.json`.)
+
+Three lines are enough — change the port to match your proxy:
+
+```bash
+HTTP_PROXY=http://127.0.0.1:7897
+HTTPS_PROXY=http://127.0.0.1:7897
+```
+
+- **Fully quit and restart DSH afterwards** — the proxy is read once at startup; reloading the page does nothing.
+- Loopback (the settings GUI and the OAuth callback's local port) is bypassed by the host automatically; `NO_PROXY` is unnecessary.
+- Self-check: if login or quota refresh fails with `UND_ERR_CONNECT_TIMEOUT` or `fetch failed`, this path is almost certainly not proxied. Request `https://oauth2.googleapis.com/token` both directly and through the proxy to confirm (a proxied reach returns `400`, since the request body is missing).
+- Do not add proxy code to the plugin: `import('undici')` is unavailable in the host's Node, and an in-process `fetch` follows the host's proxy automatically.
+
 ## 💧 Account Pool & Scheduling
 
 Three strategies, one click to switch in Settings:
@@ -142,7 +167,7 @@ Day-to-day operations run as chat commands:
 | `/antigravity-doctor` | run self-diagnostics (vision troubleshooting below) |
 | `/antigravity-logout` | sign out and remove stored credentials |
 
-Credentials are stored in `$DSH_HOME/storages/antigravity-pool-accounts.json`, including access and refresh tokens. Keep that file private. Legacy single-account credentials migrate automatically on upgrade, so you do not have to sign in again.
+Credentials live at `$DSH_HOME/storages/antigravity-pool-accounts.json` (on DSH Desktop: `%APPDATA%\dsh-desktop\harness\storages\...`), including access and refresh tokens. Keep that file private. Legacy single-account credentials migrate automatically on upgrade, so you do not have to sign in again.
 
 ## 🧊 Cooldown & Self-healing
 
