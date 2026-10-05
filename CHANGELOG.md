@@ -2,6 +2,16 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## v0.8.2 — 2026-10-05
+
+### Fixed
+- **DSH Desktop 用户代理不生效，登录永远拿不到账号（#12，PR #13）**：宿主只在启动时从 harness home 的 `.env` 读取 `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `NO_PROXY`（这几个名字写在其它任何 `.env` 里都会被宿主拒绝），而 DSH Desktop 的 harness home 不是 `~/.dsh`——Windows 在 `%APPDATA%\dsh-desktop\harness`，macOS 在 `~/Library/Application Support/dsh-desktop/harness`。README 此前只写抽象的 `$DSH_HOME`，桌面用户把代理写进 `~/.dsh/.env` 完全不生效：浏览器授权成功，换 token 阶段直连超时（`UND_ERR_CONNECT_TIMEOUT`，约 10.6 s），账号不落盘。现 README（中英同步）新增「🧱 网络环境（需要代理时）」一节：给出 CLI 与桌面版两种安装方式的实际 `.env` 路径、「写完必须完全退出并重启 DSH」的提醒与自检方法（直连 vs 走代理各请求一次 token 端点，走通返回 400）；「账号池与调度」小节同步标注桌面版凭证存储路径
+- 换 token 的三处 `fetch(TOKEN_URL)`（`loginAntigravity` / `exchangeOAuthCode` / `refreshAntigravityToken`）封装为 `requestToken()`：传输层失败（`ENOTFOUND` / `ECONNREFUSED` / `ETIMEDOUT` / `UND_ERR_CONNECT_TIMEOUT` / `UND_ERR_SOCKET` / `fetch failed` 等 9 个标记，取 `error.cause.code ?? error.code` 加 message 匹配）时，错误信息直接附上「疑似需要代理 + `.env` 该放哪」的自查指引（`proxyRemedy()`），不再以裸 `TypeError` 冒出。HTTP 层错误（`!response.ok`）的既有文案与行为不变；`refreshAntigravityToken` 的 30 s `AbortController` 透传语义不变——abort 归入非网络分支并保留 `cause`，不会误报「需要代理」
+
+### 验证
+- `npm run check` 103/103（v0.8.1 基线 98 项全保留 + 新增 `test/token-transport.test.mjs` 5 项：remedy 路径格式、不可达标记识别与 enrichment、非网络错误不带代理指引、fetch mock 成功响应透传与传输失败 enrich 两路）
+- fork PR 的 workflow 因首次贡献需维护者批准未自动触发，已按 CI 同款步骤（`npm install --no-audit --no-fund` + `npm run check`）本地复跑替代；根因与三组运行时实测（直连 10753 ms 超时 → 系统代理 400/722 ms → 桌面自带运行时与真实 `loadLayeredEnv()` 路径 400/1213 ms）见 issue #12
+
 ## v0.8.1 — 2026-10-05
 
 ### Security
