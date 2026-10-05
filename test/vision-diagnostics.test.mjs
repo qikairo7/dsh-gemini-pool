@@ -27,24 +27,11 @@ test("doctor vision lines report the pre-apply defaults before the plugin starts
 // The README's troubleshooting section sends users to a real callable entry:
 // GET /antigravity/api/doctor returns the doctor text verbatim. This route
 // was a documentation promise without an implementation until Refs #7.
-test("web api registers GET /antigravity/api/doctor returning the doctor text", async () => {
-  let route;
-  const webCtx = {
-    effect: (fn) => {
-      fn();
-      return () => {};
-    },
-    webServer: { register: (captured) => (route = captured) },
-  };
-  const ctx = { inject: (deps, cb) => cb(webCtx) };
-  registerWebApi(ctx, {}, {});
-
-  assert.ok(route, "registerWebApi must register a route");
-  assert.equal(route.kind, "prefix");
-  assert.equal(route.path, "/antigravity/api");
-
-  const response = {
+function makeResponse() {
+  return {
     statusCode: 0,
+    headers: {},
+    body: "",
     writeHead(code, headers) {
       this.statusCode = code;
       this.headers = headers;
@@ -53,6 +40,37 @@ test("web api registers GET /antigravity/api/doctor returning the doctor text", 
       this.body = body;
     },
   };
+}
+
+function makeWebCtx({ rejection } = {}) {
+  let route;
+  const webCtx = {
+    effect: (fn) => {
+      fn();
+      return () => {};
+    },
+    webServer: { register: (captured) => (route = captured) },
+    connection: {
+      admit: () => (rejection === undefined ? { peer: {} } : { rejection }),
+    },
+    get route() {
+      return route;
+    },
+  };
+  return webCtx;
+}
+
+test("web api registers GET /antigravity/api/doctor returning the doctor text", async () => {
+  const webCtx = makeWebCtx();
+  const ctx = { inject: (deps, cb) => cb(webCtx) };
+  registerWebApi(ctx, {}, {});
+  const route = webCtx.route;
+
+  assert.ok(route, "registerWebApi must register a route");
+  assert.equal(route.kind, "prefix");
+  assert.equal(route.path, "/antigravity/api");
+
+  const response = makeResponse();
   await route.handler({ method: "GET", url: "/antigravity/api/doctor" }, response);
 
   assert.equal(response.statusCode, 200);
@@ -64,17 +82,33 @@ test("web api registers GET /antigravity/api/doctor returning the doctor text", 
   }
 
   // Read-only fence: non-GET hits the method guard, no side effects.
-  const rejected = { statusCode: 0, headers: {}, body: "" };
-  Object.assign(rejected, {
-    writeHead(code, headers) {
-      this.statusCode = code;
-      this.headers = headers;
-    },
-    end(body) {
-      this.body = body;
-    },
-  });
+  const rejected = makeResponse();
   await route.handler({ method: "POST", url: "/antigravity/api/doctor" }, rejected);
   assert.equal(rejected.statusCode, 405);
   assert.equal(JSON.parse(rejected.body).error, "method-not-allowed");
 });
+
+// The /antigravity/api prefix rides the host connection admission fence
+// (same as the host /api channel): an unauthenticated or untrusted-origin
+// request must be rejected before any route logic — no pool state, no
+// credentials, no doctor text leaks to a bare curl.
+for (const rejection of [401, 403]) {
+  test(`web api rejects requests the connection fence refuses (${rejection})`, async () => {
+    const webCtx = makeWebCtx({ rejection });
+    const ctx = { inject: (deps, cb) => cb(webCtx) };
+    registerWebApi(ctx, {}, {});
+    const route = webCtx.route;
+    assert.ok(route, "registerWebApi must register a route");
+
+    const response = makeResponse();
+    await route.handler({ method: "GET", url: "/antigravity/api/doctor" }, response);
+    assert.equal(response.statusCode, rejection);
+    assert.equal(response.body, rejection === 401 ? "unauthorized" : "forbidden");
+
+    // The login route (the natural "first contact" for a fresh setup) is
+    // behind the same fence: no OAuth flow starts for a refused request.
+    const loginResponse = makeResponse();
+    await route.handler({ method: "POST", url: "/antigravity/api/login" }, loginResponse);
+    assert.equal(loginResponse.statusCode, rejection);
+  });
+}

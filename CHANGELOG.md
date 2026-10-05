@@ -4,6 +4,9 @@
 
 ## [未发布]
 
+### Security
+- **`/antigravity/api` 前缀接入宿主准入栅栏**：此前插件全部 web 路由（status / doctor / quota / login / logout / accounts\* / config / models）在 dispatcher 层无鉴权——宿主组合层的既有姿态是「鉴权属各路由 owner」，而本插件从未认领。现路由 handler 开头调用宿主 `connection.admit(request)`（与宿主自有 `/api` 通道和 WebSocket 升级同一原语）：Host/Origin 信任检查不过返回 403、无 DSH 浏览器会话返回 401，拒绝发生在任何路由逻辑之前（池状态、凭证、doctor 输出均不可达）。设置页卡片与已登录浏览器同源携带会话 cookie，不受影响；Google 登录的 OAuth 回调走独立本地端口（`ANTIGRAVITY_CALLBACK_PORT`），与栅栏无关。注入声明由 `["webServer"]` 改为 `["webServer", "connection"]`
+
 ### Fixed
 - **自动看图桥接改写蒸发，模型始终收到占位文本（Refs #7，断点⑤）**：桥原挂在宿主 `llm/stream` 事件，监听器把改写后的消息作为 `next()` 参数传递；而 cordis waterfall 的 `next` 是零参闭包（监听器传入的参数被静默丢弃），`llm/stream` 内建又闭包捕获原始请求、忽略一切调用参数——改写从未到达 provider。日志层 `rewrote` 行照常出现，成为假阳性；历史「隔离环境正常」实为 `antigravity_read_image` 工具回退被误归因。修复：桥迁至 `agent/pre-step`（沿用宿主 `installModelSelection` 的「`await next()` 后改写、返回新 decision」模式，宿主消费返回值并随会话持久化）。`isEnabled` / `isTextOnlyModel` 门、池转述调用、进程内缓存、fail-open、决策链日志语义全部保留；`antigravity_read_image` 工具路径不变。覆盖边界：贴图（本步新输入）走桥；工具结果图片块（如宿主 `read_image` 返回）不经桥，保持占位文本加工具回退
 - `/antigravity-doctor` 的 `visionBridge` 行改为读取时实时探测事件总线：`registered`＝桥此刻在线；新增 `dropped`＝注册成功后已从总线消失（issue #7 故障签名），重启宿主或重载插件可恢复；总线布局不可读（宿主漂移）时回退注册簿记值，不误报
@@ -19,6 +22,7 @@
 - 桥迁移（Fixed）验证：`npm run check` 87/87（pre-step 契约全套重写：enter 改写 / reject 与无图与非纯文本透传 / gate 抛错 / 缓存与并发 / fail-open；存活探针回归含真实 cordis 注册→注销翻转）；隔离 web 副本（DSH 0.2.1-alpha.1）GUI 贴图端到端：决策链三行日志、用户消息持久化为池转述、模型零工具调用直答内容与测试图真实几何吻合，轨迹解码确认模型侧无占位文本
 - doctor 入口（Added）验证：`npm run check` 88/88（新增路由测试：GET `/antigravity/api/doctor` 返回含三行状态、非 GET 405）
 - 对话命令（Added）验证：`npm run check` 全绿（新增 `test/commands.test.mjs` 8 项：四命令注册与统一注销、无 commands 服务不抛错、login 展示授权链接、quota 逐账号刷新并触发适配器更新与额度行渲染、空池引导文案、doctor 原文透传、logout 无 confirm 拒绝且 confirm 后全量移除、handler 异常沉降为 error 结果）
+- 准入栅栏（Security）验证：`npm run check` 全绿（vision-diagnostics 新增 401/403 两态用例：admit 拒绝时 doctor 与 login 路由在任何业务逻辑前返回对应状态码与 unauthorized/forbidden 文本；既有 200/405 用例在 admit 通过态下不变）
 
 ## v0.8.0 — 2026-10-01
 
