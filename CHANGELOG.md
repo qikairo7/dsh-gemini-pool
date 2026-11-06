@@ -1,6 +1,31 @@
 # Changelog
 
-本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
+本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/zh-CN/)。
+
+## v0.9.0 — 2026-11-06
+
+### Fixed
+- **设置页把账号没有的模型标成可用（#15、#16）**：`parseCatalogModels()` 此前遍历静态 `MODELS` 时无条件写 `available: true`，并在没有匹配行时拿任意一条 Gemini 额度当兜底；`publicModelMatchNeedles()` 还把 3.8 的匹配词硬绑到 3.7。现在模型目录只从该账号真实的 `fetchAvailableModels` 结果生成：`disabled`、`chat_*`、`tab_*` 与内部模型直接剔除；一个模型族只有至少列出一个可用 variant 才出现；3.8/3.7 不再互相别名。设置页对遗留目录里不可用的模型置灰并标注「当前账号不可用」，不再诱导用户选中后 404。
+- **模型目录被单个账号覆盖**：以前每次额度刷新都把一个账号的 `catalogModels` 写进全局设置，后刷新的账号会覆盖前一个账号的模型。现在 `syncModelCatalogFromPool()` 对所有账号取并集，并保留每个账号自己的 runtime variant 映射；请求调度前按账号目录过滤，避免把某账号没有的模型发给它。
+- **自动均衡退化为单账号硬抗（#14）**：`getCandidateAccounts()` 读的是 `groups[].limits[]`，而 `parseQuotaSummary()` 写入的是 `groups[].buckets[]`，导致每个账号的额度权重恒为 1.0、永远先打主账号直到 429。现在按 `buckets[].window`（5h → weekly → 最小值）计算权重，并用平滑加权轮询把请求前置分散到多个账号；429 只作为兜底。
+- **DSH 0.2.2 图像预算契约**：0.2.2 移除了 `offloadRequestImagesWithPolicy`。插件改为在存在 `requiredImageOffload` / `projectOffloadedImages` 时自行计算历史图片预算并在超限时抛 `IMAGE_OFFLOAD_REQUIRED`（带 `offloadImages`），由宿主 `dsh-compaction-image-offload` 持久化 offload；旧版宿主继续走原 helper。
+- **Cordis 4.1 事件表空键语义**：`isVisionBridgeHookLive()` 在 cordis 4.1 删除最后一个监听器后把 `_hooks[event] === undefined` 误报为「总线不可读」。现在可读的空表返回 `false`，只有无法读取的布局才返回 `undefined`。
+
+### Added
+- **Gemini 4 Argon 动态接入（#17）**：模型目录按 Antigravity 实时返回的 id 自动折叠新模型族，`gemini-4-argon-low/medium/high` 会合并为一个 `gemini-4-argon`（名字、上下文、输出上限、图片能力均取服务端值）；`gemini-4-argon-disabled` 等 `disabled: true` 条目不会出现。无需再改静态表。
+- **多账号额度查看下拉（#14）**：设置页账号卡片区新增账号下拉，可只看单个账号的额度/重置时间/状态；多账号默认仍展示全部卡片。
+- **Tier entitlement 探测**：`fetchAvailableModels` 会先带 `entitlement.userTier`（paid tier → current tier）再回退到不带 tier 的请求，避免付费账号的模型列表被无 tier 请求截窄（Gemini 4 Argon 的典型症状）。
+- **模型族折叠与多账号并集测试**、**平滑加权调度测试**：新增 `test/catalog.test.mjs` 6 项与 `test/pool-scheduling.test.mjs` 4 项。
+
+### Changed
+- **DSH 兼容基线升级到 0.2.2-rc.1**：devDependencies 从 0.1.7-rc.2 全部升到 0.2.2-rc.1，`engines.dsh` 改为 `>=0.2.0-rc.2 <0.3.0`，`engines.node` 改为 `>=24.9`（与 0.2.2 的最低 Node 要求一致）。
+- **Antigravity endpoint 列表**新增 `https://daily-cloudcode-pa.googleapis.com`（Antigravity 客户端实际使用的 daily 通道），保留旧 sandbox host 作最后回退。
+- **Gemini 3/4 文本模型统一发送 `thinkingLevel`**：此前只有 3.8/3.7 tiered id 设置 `thinkingConfig`，带工具时新模型可能几乎不思考；现在按 effort 映射 low/medium/high，图片模型不发送。
+
+### 验证
+- `npm run check` 115/115（原 103 项全保留 + catalog 6 项 + scheduling 4 项 + 设置页多账号/不可用模型渲染 2 项）。
+- 用 magpie 的真实 `antigravity-models-2026-10-20.json` 夹具跑目录生成：输出仅包含该账号实际拥有的 `gemini-3.8-flash` 家族、`gemini-3.5-flash`、`gemini-3.1-flash-image` 等，不再出现 3.7/3.8 的虚假条目；`gemini-4-argon-*` 在单独注入时可正确折叠。
+- 在隔离 `gemini-smoke` profile（web 模板）安装本插件并启动 DSH 0.2.2-rc.1：插件加载无异常，`/antigravity/api/status` 鉴权后返回 200，`/antigravity/api/doctor` 未鉴权返回 401（路由与准入栅栏均在）。
 
 ## v0.8.2 — 2026-10-05
 
