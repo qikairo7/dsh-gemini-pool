@@ -22,6 +22,9 @@
 - **Antigravity endpoint 列表**新增 `https://daily-cloudcode-pa.googleapis.com`（Antigravity 客户端实际使用的 daily 通道），保留旧 sandbox host 作最后回退。
 - **Gemini 3/4 文本模型统一发送 `thinkingLevel`**：此前只有 3.8/3.7 tiered id 设置 `thinkingConfig`，带工具时新模型可能几乎不思考；现在按 effort 映射 low/medium/high，图片模型不发送。
 
+### 文档
+- README 中英新增 v0.9.0 重点、兼容性矩阵与 v0.8.x 升级说明；架构图更新为 `agent/pre-step` 视觉旁路 + 实时模型目录 + 加权调度；`SECURITY.md` 增加支持版本表。
+
 ### 验证
 - `npm run check` 115/115（原 103 项全保留 + catalog 6 项 + scheduling 4 项 + 设置页多账号/不可用模型渲染 2 项）。
 - 用 magpie 的真实 `antigravity-models-2026-10-20.json` 夹具跑目录生成：输出仅包含该账号实际拥有的 `gemini-3.8-flash` 家族、`gemini-3.5-flash`、`gemini-3.1-flash-image` 等，不再出现 3.7/3.8 的虚假条目；`gemini-4-argon-*` 在单独注入时可正确折叠。

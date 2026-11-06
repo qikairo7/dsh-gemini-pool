@@ -30,11 +30,19 @@
 
 Gemini's strengths line up with coding work: **multimodal** input that reads images, **frontend / UI code generation**, and **image generation** for interface assets. This plugin puts all three inside DSH, billed against your subscription quota.
 
-Have more than one Google account? Add them all to a **pool**: quotas balance across accounts, 429s fail over to the next account, and failing accounts cool down and recover by themselves. Settings shows one card per account with live weekly and 5-hour quota bars.
+Have more than one Google account? Add them all to a **pool**: proactive weighted round-robin by remaining quota, seamless failover on 429, and failing accounts cool down and recover by themselves. Settings has a dropdown to inspect each account's weekly / 5-hour quota, or show every account card side by side.
 
 <p align="center">
   <img src="./assets/images/screenshots/settings-1.png" alt="dsh-gemini-pool settings page" width="78%">
 </p>
+
+## 🆕 What's new in v0.9.0
+
+- **Live model catalog**: built from each account's `fetchAvailableModels`; models an account does not have are never offered, and `disabled`, `chat_*`, `tab_*` entries are filtered out. 3.8 and 3.7 no longer alias each other.
+- **Multi-account union with capability routing**: accounts with different model rollouts are unioned; a request only goes to an account that actually lists that model.
+- **Proactive weighted round-robin**: request distribution follows real 5h / weekly quota weights instead of hammering one account until 429. Settings adds a per-account quota dropdown.
+- **New models appear automatically**: Gemini 4 Argon and future families are folded from the live list; no static table edit required.
+- **DSH 0.2.2-rc.1 compatibility**: new image-budget offload contract, tier entitlement probing, and Cordis 4.1 event semantics.
 
 ## 🆚 Why you need it
 
@@ -45,7 +53,7 @@ Installing this plugin changes what your Google AI Pro subscription can do:
 | Gemini multimodal (vision) | ❌ unavailable while coding | ✅ drop images into the chat |
 | Frontend / UI codegen | ❌ no project context in web | ✅ reads your actual codebase |
 | Image gen for UI assets | ⚠️ manual copy-paste | ✅ `antigravity_image_generate` auto-saves |
-| Multi-account quota | — | ✅ pool scheduling, seamless 429 failover |
+| Multi-account quota | — | ✅ proactive weighted scheduling, seamless 429 failover |
 | Quota visibility | ❌ black box | ✅ live per-account bars |
 | Unhealthy accounts | ❌ keep hitting dead ones | ✅ auto-disable + probe + revive |
 
@@ -125,6 +133,17 @@ If your DSH does not support `dsh plugin add`, copy the package into `$DSH_HOME/
 
 </details>
 
+## 🧩 Compatibility
+
+| Item | Requirement |
+|---|---|
+| DSH | `0.2.2-rc.1` verified; `engines.dsh` is `>=0.2.0-rc.2 <0.3.0` |
+| Node.js | `>=24.9` (same minimum as DSH 0.2.2) |
+| Distribution | GitHub Release / `dsh plugin add github:...`; no npm registry dependency |
+| Current version | `v0.9.0` ([Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.0)) |
+
+Upgrading from `v0.8.x`: restart DSH and open Settings once to refresh quota. The old static model list is replaced by the live per-account catalog; models you had enabled but no account provides are removed automatically.
+
 ## 🧱 Network environment (behind a proxy)
 
 The plugin contains no proxy code of its own: every Google request is an in-process `fetch` that uses the host's global HTTP path. The host reads `HTTP_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `NO_PROXY` **only from the harness home's `.env`, and only once at startup** (the same names in any other `.env` are refused), then installs the proxy for the plugin from there.
@@ -196,7 +215,7 @@ When the main model cannot see images (e.g. a text-only model), a Gemini model f
 - **Known dependency**: automatic description relies on the host's `agent/pre-step` event and image admission on `resolveModelInfo`. If pasting images misbehaves after a major host upgrade, revisit this section (verified against DSH 0.2.2-rc.1).
 - **Troubleshooting**: if the model still receives a placeholder after pasting an image, run `/antigravity-doctor` and check the `visionBridge` / `visionShim` lines (`registered` + `installed` is the healthy state). Server log lines prefixed `[Antigravity Pool Vision]` record every bridge decision (request entry, model gate, rewrite result or passthrough reason); zero prefixed lines after a paste means the event never reached the bridge.
 
-## 🤖 Models
+## 🤖 Model families
 
 Tick a model in Settings to enable it. Enabled models float to the top, each showing the highest available quota in the pool.
 
@@ -222,12 +241,14 @@ Models in the same pool share the weekly and 5-hour quotas. Quota drains in prop
 ```mermaid
 flowchart LR
   subgraph HOST["DSH host"]
-    LLM["llm/stream request flow"]
+    PRE["agent/pre-step<br/>messages & images"]
+    LLM["llm/stream<br/>model requests"]
     SEL["Model selector / Settings"]
   end
   subgraph PLUGIN["dsh-gemini-pool"]
     CORE["Plugin core<br/>commands & API routes"]
-    POOL["Pool manager<br/>scheduling · cooldown · probing"]
+    CATALOG["Model catalog<br/>live fetchAvailableModels<br/>family folding · account union"]
+    POOL["Pool manager<br/>weighted scheduling · cooldown · probing"]
     VB["Vision bridge<br/>image to text"]
     TOOLS["Tools<br/>read_image · image_generate"]
   end
@@ -235,14 +256,15 @@ flowchart LR
   GOOGLE["Google Antigravity API"]
 
   SEL --> CORE
-  LLM --> VB --> POOL
-  CORE --> POOL
-  TOOLS --> GOOGLE
+  CORE --> CATALOG --> POOL
+  PRE --> VB --> POOL
+  LLM --> POOL
+  TOOLS --> POOL
   POOL --> GOOGLE
   POOL --> STORE
 ```
 
-Requests enter the plugin through the host: the vision bridge rewrites image requests for text-only models, the pool manager picks an account by scheduling strategy and handles 429 cooldown and probing, and every call goes in-process straight to the official Google endpoints.
+Requests enter the plugin through the host: the `agent/pre-step` vision bridge rewrites images for text-only models into descriptions from a pool Gemini; the catalog builds the offered models from each account's live `fetchAvailableModels` and folds thinking levels; the pool manager picks accounts by remaining-quota weights and handles 429 cooldown and probing. Every call goes in-process straight to the official Google endpoints.
 
 <p align="center">
   <img src="./assets/images/panel.gif" alt="Live request-flow demo (animated numbers are illustrative)" width="72%">

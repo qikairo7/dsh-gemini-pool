@@ -1,5 +1,12 @@
 # Security Policy
 
+## 支持版本
+
+| 版本 | 状态 |
+|---|---|
+| `v0.9.x`（当前 `v0.9.0`，2026-11-06） | 当前维护 |
+| `<= v0.8.2` | 历史版本，不再作为安全修复目标 |
+
 ## 报告漏洞
 
 请通过 GitHub 的 **Private Vulnerability Reporting**（仓库 Security 页 → Report a vulnerability）私下报告安全问题，请勿开公开 issue。
