@@ -82,6 +82,22 @@ test("Gemini 4 Argon is discovered from the live list (issue #17)", () => {
   assert.equal(runtimeModelForEffort(model, "medium"), "gemini-4-argon-medium");
 });
 
+test("Antigravity-hidden model ids are not offered", () => {
+  const catalog = buildCatalogFromRawModels(
+    rawModelsFromAvailable(
+      availableModels({
+        "gemini-2.5-pro": { name: "Gemini 2.5 Pro" },
+        "gemini-2.5-flash-thinking": { name: "Gemini 2.5 Flash Thinking" },
+        "gemini-3-flash": { name: "Gemini 3 Flash" },
+      }),
+    ),
+  );
+  const ids = catalog.map((model) => model.id);
+  assert.equal(ids.includes("gemini-2.5-pro"), false);
+  assert.equal(ids.includes("gemini-2.5-flash-thinking"), false);
+  assert.ok(ids.includes("gemini-3-flash"));
+});
+
 test("disabled models are not offered (gemini-4-argon-disabled 404 guard)", () => {
   const catalog = buildCatalogFromRawModels(
     rawModelsFromAvailable(
