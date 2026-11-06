@@ -36,21 +36,6 @@ Have more than one Google account? Add them all to a **pool**: proactive weighte
   <img src="./assets/images/screenshots/settings-1.png" alt="dsh-gemini-pool settings page" width="78%">
 </p>
 
-## 🆕 What's new in v0.9.0
-
-- **Live model catalog**: built from each account's `fetchAvailableModels`; models an account does not have are never offered, and `disabled`, `chat_*`, `tab_*` entries are filtered out. 3.8 and 3.7 no longer alias each other.
-- **Multi-account union with capability routing**: accounts with different model rollouts are unioned; a request only goes to an account that actually lists that model.
-- **Proactive weighted round-robin**: request distribution follows real 5h / weekly quota weights instead of hammering one account until 429. Settings adds a per-account quota dropdown.
-- **New models appear automatically**: Gemini 4 Argon and future families are folded from the live list; no static table edit required.
-- **DSH 0.2.2-rc.1 compatibility**: new image-budget offload contract, tier entitlement probing, and Cordis 4.1 event semantics.
-
-## 🛠 v0.9.1 compatibility hardening
-
-- **Antigravity-native request identity**: `agent-` prefixed `requestId`, a first-user-message hashed `sessionId` in Antigravity's shape, and an `antigravity/hub/<version>` `User-Agent`.
-- **Automatic project onboarding**: an account without a Code Assist project goes through `loadCodeAssist` → `onboardUser` instead of falling back to a locally generated UUID.
-- **Per-model quota scheduling**: models with their own allowance (Gemini 4 Argon, for example) are weighed by that model's `remainingFraction` first, then by the account's 5h/weekly group.
-- **Catalog tightening**: hide `gemini-2.5-pro` / `gemini-2.5-flash-thinking` that Antigravity does not offer for chat; use a conservative fallback when no live list exists; cache refused tiers for 24 hours to avoid repeated 400s.
-
 ## 🆚 Why you need it
 
 Installing this plugin changes what your Google AI Pro subscription can do:
@@ -103,7 +88,7 @@ The relay has one real advantage: **bans hit the operator's accounts, yours stay
 
 ## 🚀 Quick Start
 
-**Requirements**: DSH 0.2.2-rc.1, the version this release is tested against (`engines.dsh` covers the 0.2.x line). Run `dsh --version` to check yours.
+**Requirements**: DSH 0.2.2-rc.1, the version this release is tested against. Run `dsh --version` to check yours; see "🧩 Compatibility & versions" for the full range.
 
 **1. Install the plugin**
 
@@ -140,7 +125,7 @@ If your DSH does not support `dsh plugin add`, copy the package into `$DSH_HOME/
 
 </details>
 
-## 🧩 Compatibility
+## 🧩 Compatibility & versions
 
 | Item | Requirement |
 |---|---|
@@ -150,6 +135,22 @@ If your DSH does not support `dsh plugin add`, copy the package into `$DSH_HOME/
 | Current version | `v0.9.1` ([Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.1)) |
 
 Upgrading from `v0.8.x`: restart DSH and open Settings once to refresh quota. The old static model list is replaced by the live per-account catalog; models you had enabled but no account provides are removed automatically.
+
+### Recent versions
+
+**v0.9.1 — protocol and scheduling hardening**
+
+- `agent-` prefixed `requestId`; first-user-message hashed `sessionId`; `antigravity/hub/<version>` `User-Agent`.
+- Accounts without a Code Assist project are created through `onboardUser`.
+- Scheduling prefers the exact model's `remainingFraction`, then the account's 5h/weekly group.
+- Hide `gemini-2.5-pro` / `gemini-2.5-flash-thinking`; conservative fallback when no live list exists; refused tiers cached for 24 hours.
+
+**v0.9.0 — model catalog and account pool**
+
+- Live per-account `fetchAvailableModels` catalog; multi-account union with capability routing.
+- Proactive smooth weighted round-robin by 5h / weekly quota instead of waiting for a single account to hit 429.
+- Gemini 4 Argon and future families folded from the live list.
+- DSH 0.2.2-rc.1 image-budget offload, tier entitlement, and Cordis 4.1 event semantics.
 
 ## 🧱 Network environment (behind a proxy)
 

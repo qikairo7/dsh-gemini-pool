@@ -36,21 +36,6 @@ Gemini 的强项正好落在编程场景上：**多模态**看图、**前端与 
   <img src="./assets/images/screenshots/settings-1.png" alt="dsh-gemini-pool 设置页" width="78%">
 </p>
 
-## 🆕 v0.9.0 重点
-
-- **模型目录实时化**：按每个账号的 `fetchAvailableModels` 生成，账号没有的模型不再展示；`disabled`、`chat_*`、`tab_*` 自动剔除；3.8/3.7 不再互相误判。
-- **多账号并集与能力路由**：不同账号启用不同模型时取并集，请求只会发到确实拥有该模型的账号。
-- **前置加权轮询**：按 5h / weekly 真实额度权重平滑分配请求，不再等单账号撞 429 才切换；设置页新增账号额度下拉。
-- **新模型自动接入**：Gemini 4 Argon 等新模型按服务端返回自动折叠出现，无需改静态表。
-- **DSH 0.2.2-rc.1 兼容**：适配新的图片预算 offload 契约、tier entitlement 探测与 Cordis 4.1 事件语义。
-
-## 🛠 v0.9.1 兼容加固
-
-- **请求身份对齐 Antigravity**：`requestId` 使用 `agent-` 前缀，`sessionId` 按首条用户消息哈希为 Antigravity 风格，`User-Agent` 使用 `antigravity/hub/<version>` 形状。
-- **自动建项目**：账号没有 Code Assist project 时，走 `loadCodeAssist` → `onboardUser` 创建，不再用本地生成的 UUID 硬撑。
-- **按模型额度调度**：拥有独立额度池的模型（如 Gemini 4 Argon）优先按该模型的 `remainingFraction` 选号，再回退到账号组 5h/weekly。
-- **模型目录收敛**：隐藏 Antigravity 自身不提供给聊天选择器的 `gemini-2.5-pro` / `gemini-2.5-flash-thinking`；无实时目录时使用保守 fallback；被 Google 拒绝的 tier 缓存 24 小时，避免每次刷新重复 400。
-
 ## 🆚 为什么需要它
 
 装与不装，同一个 Google AI Pro 订阅是两种用法：
@@ -103,7 +88,7 @@ Gemini 的强项正好落在编程场景上：**多模态**看图、**前端与 
 
 ## 🚀 快速开始
 
-**环境要求**：DSH 0.2.2-rc.1（当前验证版本，`engines.dsh` 覆盖 0.2.x）。运行 `dsh --version` 查看本机版本。
+**环境要求**：DSH 0.2.2-rc.1（当前验证版本）。运行 `dsh --version` 查看本机版本；完整范围见「🧩 兼容性与版本」。
 
 **1. 安装插件**
 
@@ -140,7 +125,7 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 
 </details>
 
-## 🧩 兼容性
+## 🧩 兼容性与版本
 
 | 项目 | 要求 |
 |---|---|
@@ -150,6 +135,22 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 | 当前版本 | `v0.9.1`（见 [Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.1)） |
 
 从 `v0.8.x` 升级：重启 DSH 后打开一次设置页刷新额度，旧的静态模型列表会被账号实时目录替换；已勾选但账号不提供的模型会自动从选择器移除。
+
+### 近期版本
+
+**v0.9.1 — 协议与调度加固**
+
+- `requestId` 改为 `agent-` 前缀；`sessionId` 按首条用户消息哈希为 Antigravity 风格；`User-Agent` 使用 `antigravity/hub/<version>`。
+- 账号没有 Code Assist project 时自动走 `onboardUser` 创建。
+- 按具体模型的 `remainingFraction` 调度，再回退账号组 5h/weekly。
+- 隐藏 `gemini-2.5-pro` / `gemini-2.5-flash-thinking`；无实时目录时使用保守 fallback；被拒绝的 tier 缓存 24 小时。
+
+**v0.9.0 — 模型目录与账号池**
+
+- 模型目录按账号 `fetchAvailableModels` 实时生成，多账号取并集并做能力路由。
+- 按 5h / weekly 额度做前置平滑加权轮询，不再等单账号撞 429。
+- Gemini 4 Argon 等新模型按服务端返回自动折叠出现。
+- 适配 DSH 0.2.2-rc.1 的图片预算 offload、tier entitlement 与 Cordis 4.1 事件语义。
 
 ## 🧱 网络环境（需要代理时）
 
