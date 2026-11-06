@@ -44,6 +44,13 @@ Have more than one Google account? Add them all to a **pool**: proactive weighte
 - **New models appear automatically**: Gemini 4 Argon and future families are folded from the live list; no static table edit required.
 - **DSH 0.2.2-rc.1 compatibility**: new image-budget offload contract, tier entitlement probing, and Cordis 4.1 event semantics.
 
+## 🛠 v0.9.1 compatibility hardening
+
+- **Antigravity-native request identity**: `agent-` prefixed `requestId`, a first-user-message hashed `sessionId` in Antigravity's shape, and an `antigravity/hub/<version>` `User-Agent`.
+- **Automatic project onboarding**: an account without a Code Assist project goes through `loadCodeAssist` → `onboardUser` instead of falling back to a locally generated UUID.
+- **Per-model quota scheduling**: models with their own allowance (Gemini 4 Argon, for example) are weighed by that model's `remainingFraction` first, then by the account's 5h/weekly group.
+- **Catalog tightening**: hide `gemini-2.5-pro` / `gemini-2.5-flash-thinking` that Antigravity does not offer for chat; use a conservative fallback when no live list exists; cache refused tiers for 24 hours to avoid repeated 400s.
+
 ## 🆚 Why you need it
 
 Installing this plugin changes what your Google AI Pro subscription can do:
@@ -140,7 +147,7 @@ If your DSH does not support `dsh plugin add`, copy the package into `$DSH_HOME/
 | DSH | `0.2.2-rc.1` verified; `engines.dsh` is `>=0.2.0-rc.2 <0.3.0` |
 | Node.js | `>=24.9` (same minimum as DSH 0.2.2) |
 | Distribution | GitHub Release / `dsh plugin add github:...`; no npm registry dependency |
-| Current version | `v0.9.0` ([Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.0)) |
+| Current version | `v0.9.1` ([Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.1)) |
 
 Upgrading from `v0.8.x`: restart DSH and open Settings once to refresh quota. The old static model list is replaced by the live per-account catalog; models you had enabled but no account provides are removed automatically.
 
@@ -229,7 +236,7 @@ Tick a model in Settings to enable it. Enabled models float to the top, each sho
 | Gemini 4 Argon · Gemini 3.8 / 3.7 / 3.6 / 3.5 Flash | Gemini |
 | Gemini 3.5 Flash Lite · Gemini 3.1 Flash Lite | Gemini |
 | Gemini 3.1 Pro · Gemini 3.1 Flash Image (image gen) | Gemini |
-| Gemini 3 Flash · Gemini 2.5 Pro / Flash | Gemini |
+| Gemini 3 Flash · Gemini 2.5 Flash | Gemini |
 | Claude Opus 4.6 · Claude Sonnet 4.6 · GPT-OSS 120B | Claude & GPT |
 
 The list above names model families Antigravity has offered; the real selector is whatever your accounts return. The plugin only offers models present and not `disabled` in `fetchAvailableModels`, folds thinking levels (low / medium / high) into one entry per family, and unions accounts — a request only goes to an account that actually lists the model.

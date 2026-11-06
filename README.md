@@ -44,6 +44,13 @@ Gemini 的强项正好落在编程场景上：**多模态**看图、**前端与 
 - **新模型自动接入**：Gemini 4 Argon 等新模型按服务端返回自动折叠出现，无需改静态表。
 - **DSH 0.2.2-rc.1 兼容**：适配新的图片预算 offload 契约、tier entitlement 探测与 Cordis 4.1 事件语义。
 
+## 🛠 v0.9.1 兼容加固
+
+- **请求身份对齐 Antigravity**：`requestId` 使用 `agent-` 前缀，`sessionId` 按首条用户消息哈希为 Antigravity 风格，`User-Agent` 使用 `antigravity/hub/<version>` 形状。
+- **自动建项目**：账号没有 Code Assist project 时，走 `loadCodeAssist` → `onboardUser` 创建，不再用本地生成的 UUID 硬撑。
+- **按模型额度调度**：拥有独立额度池的模型（如 Gemini 4 Argon）优先按该模型的 `remainingFraction` 选号，再回退到账号组 5h/weekly。
+- **模型目录收敛**：隐藏 Antigravity 自身不提供给聊天选择器的 `gemini-2.5-pro` / `gemini-2.5-flash-thinking`；无实时目录时使用保守 fallback；被 Google 拒绝的 tier 缓存 24 小时，避免每次刷新重复 400。
+
 ## 🆚 为什么需要它
 
 装与不装，同一个 Google AI Pro 订阅是两种用法：
@@ -140,7 +147,7 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 | DSH | `0.2.2-rc.1` 已验证；`engines.dsh` 为 `>=0.2.0-rc.2 <0.3.0` |
 | Node.js | `>=24.9`（与 DSH 0.2.2 的最低要求一致） |
 | 分发方式 | GitHub Release / `dsh plugin add github:...`；不依赖 npm registry |
-| 当前版本 | `v0.9.0`（见 [Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.0)） |
+| 当前版本 | `v0.9.1`（见 [Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.1)） |
 
 从 `v0.8.x` 升级：重启 DSH 后打开一次设置页刷新额度，旧的静态模型列表会被账号实时目录替换；已勾选但账号不提供的模型会自动从选择器移除。
 
@@ -234,7 +241,7 @@ HTTPS_PROXY=http://127.0.0.1:7897
 | Gemini 4 Argon · Gemini 3.8 / 3.7 / 3.6 / 3.5 Flash | Gemini |
 | Gemini 3.5 Flash Lite · Gemini 3.1 Flash Lite | Gemini |
 | Gemini 3.1 Pro · Gemini 3.1 Flash Image（生图） | Gemini |
-| Gemini 3 Flash · Gemini 2.5 Pro / Flash | Gemini |
+| Gemini 3 Flash · Gemini 2.5 Flash | Gemini |
 | Claude Opus 4.6 · Claude Sonnet 4.6 · GPT-OSS 120B | Claude & GPT |
 
 以上是服务端曾返回过的模型族，实际可选列表以你的账号实时返回为准：插件只展示 `fetchAvailableModels` 里存在且未 `disabled` 的模型，并按思考档位（low / medium / high）折叠为每个模型族一个条目。多账号启用不同模型时取并集，请求只会调度到确实拥有该模型的账号。

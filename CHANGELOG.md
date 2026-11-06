@@ -2,6 +2,19 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/zh-CN/)。
 
+## v0.9.1 — 2026-11-06
+
+### Fixed
+- **Antigravity 请求身份对齐**：`requestId` 改为 `agent-<token>` 前缀；`sessionId` 按首条用户消息 SHA-256 生成 Antigravity 风格的负整数（有 DSH sessionId 时作为兜底）；`User-Agent` 改为 `antigravity/hub/<version> os/arch`，不再固定旧的 `antigravity/1.15.8`。
+- **无 project 账号自动 onboard**：`loadCodeAssist` 没返回 project 时，按 `defaultTier` 调用 `onboardUser` 创建（带 Antigravity `ide_version` / `ide_name` 与 onboarding headers），不再直接用本地生成的稳定 UUID。
+- **按具体模型额度调度**：`quotaFractionForAccount(account, category, modelId)` 优先读该模型 `catalogModels[].remainingFraction` / `quota.models[].remainingFraction`，再回退账号组 5h/weekly，避免 Gemini 4 Argon 等独立额度被普通 Gemini 组覆盖。
+- **模型目录收敛**：隐藏 Antigravity 不提供给聊天选择器的 `gemini-2.5-pro` / `gemini-2.5-flash-thinking`（对齐 magpie `antigravityHidden`）；无实时目录时改用 6 个保守 fallback 模型；被 Google 400 拒绝的 tier 缓存 24 小时，避免每次刷新先撞 400。
+
+### 验证
+- `npm run check` 119/119（新增 onboarding 1 项、模型额度 1 项、隐藏模型 1 项、请求信封身份 1 项；原 115 项全保留）。
+- `onboardUser` 单测覆盖 loadCodeAssist → listCloudAICompanionProjects → onboardUser 的完整路径。
+- 请求信封单测断言 `requestId` 前缀 `agent-`、`sessionId` 为 `-<数字>`、`User-Agent` 为 `antigravity/hub/...`。
+
 ## v0.9.0 — 2026-11-06
 
 ### Fixed

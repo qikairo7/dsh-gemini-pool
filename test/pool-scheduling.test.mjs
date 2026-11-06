@@ -16,7 +16,7 @@ async function createManager() {
   };
 }
 
-function quotaWith(fiveHour, remaining, modelIds = ["gemini-3.8-flash"]) {
+function quotaWith(fiveHour, remaining, modelIds = ["gemini-3.8-flash"], modelRemaining) {
   return {
     fetchedAt: Date.now(),
     groups: [
@@ -32,6 +32,7 @@ function quotaWith(fiveHour, remaining, modelIds = ["gemini-3.8-flash"]) {
       id,
       name: id,
       available: true,
+      ...(typeof modelRemaining === "number" ? { remainingFraction: modelRemaining } : {}),
       runtimeModels: { "": `${id}-high`, high: `${id}-high` },
     })),
   };
@@ -91,6 +92,26 @@ test("accounts that do not list a model are never chosen for it", async () => {
   } finally {
     await cleanup();
   }
+});
+
+test("per-model quota wins over the family bucket when routing a specific model", () => {
+  const account = {
+    quota: {
+      groups: [
+        {
+          displayName: "Gemini Models",
+          buckets: [{ window: "5h", remainingFraction: 0.9 }],
+        },
+      ],
+      catalogModels: [
+        { id: "gemini-4-argon", remainingFraction: 0.2 },
+        { id: "gemini-3.8-flash", remainingFraction: 0.9 },
+      ],
+    },
+  };
+  assert.equal(quotaFractionForAccount(account, "gemini", "gemini-4-argon"), 0.2);
+  assert.equal(quotaFractionForAccount(account, "gemini", "gemini-3.8-flash"), 0.9);
+  assert.equal(quotaFractionForAccount(account, "gemini", "unknown-model"), 0.9);
 });
 
 test("quotaFractionForAccount reads the real buckets shape and the legacy limits shape", () => {

@@ -143,6 +143,39 @@ test("successful stream clears cooldown window without resetting failureCount", 
   }
 });
 
+test("request envelope uses Antigravity-native requestId, sessionId and user-agent", async () => {
+  const { manager, cleanup } = await createTempManager();
+  try {
+    await addAccount(manager, "identity@example.com");
+    let streamInit;
+    let streamBody;
+    const adapter = new AntigravityPoolAdapter(manager, modelSettings(), () => undefined);
+    await withStubbedFetch(
+      (url, init) => {
+        if (isDiscoveryRequest(url)) return discoveryResponse();
+        streamInit = init;
+        streamBody = JSON.parse(init.body);
+        return sseResponse(SSE(textChunk("hello")));
+      },
+      async () => {
+        for await (const _chunk of adapter.stream({
+          model: "gemini-3.8-flash",
+          messages: [{ role: "user", content: [{ type: "text", text: "conversation marker" }] }],
+        })) {
+          void _chunk;
+        }
+      },
+    );
+    assert.match(streamBody.requestId, /^agent-/);
+    assert.equal(streamBody.requestType, "agent");
+    assert.equal(streamBody.userAgent, "antigravity");
+    assert.match(streamBody.request.sessionId, /^-\d+$/);
+    assert.match(streamInit.headers["User-Agent"], /^antigravity\/hub\/\d+\.\d+\.\d+ /);
+  } finally {
+    await cleanup();
+  }
+});
+
 // Important: quota-ish text in a 400 must not cool down the account on the
 // image path. "quota field unknown" is a malformed request, not exhaustion.
 test("image path does not mark cooldown for a 400 whose text merely contains quota", async () => {
