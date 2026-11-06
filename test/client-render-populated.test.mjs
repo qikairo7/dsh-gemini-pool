@@ -280,6 +280,31 @@ test("quota rows render from real quota groups", async () => {
   assert.ok(/\d+%/.test(text) || /Claude|Gemini|GPT/i.test(text), "quota content must render");
 });
 
+test("multi-account selector renders every account and the all-accounts choice", async () => {
+  const second = { ...STATUS_FIXTURE.accounts[0], id: "acc_backup", email: "backup@example.com" };
+  const payload = { ...STATUS_FIXTURE, accounts: [...STATUS_FIXTURE.accounts, second] };
+  const requests = [];
+  const { mount } = loadClient({ statusPayload: payload, quotaPayload: payload, requests });
+  const text = await mount();
+  assert.match(text, /全部账号/);
+  assert.match(text, /backup@example\.com/);
+});
+
+test("unavailable model rows render disabled with an explanatory badge", async () => {
+  const payload = {
+    ...STATUS_FIXTURE,
+    models: {
+      ...STATUS_FIXTURE.models,
+      options: STATUS_FIXTURE.models.options.map((model, index) =>
+        index === 0 ? { ...model, available: false } : model),
+    },
+  };
+  const requests = [];
+  const { mount } = loadClient({ statusPayload: payload, quotaPayload: payload, requests });
+  const text = await mount();
+  assert.match(text, /当前账号不可用/);
+});
+
 test("model list renders and marks enabled models", async () => {
   const requests = [];
   const { mount } = loadClient({ statusPayload: STATUS_FIXTURE, quotaPayload: STATUS_FIXTURE, requests });

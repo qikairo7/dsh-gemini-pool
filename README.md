@@ -88,7 +88,7 @@ Gemini 的强项正好落在编程场景上：**多模态**看图、**前端与 
 
 ## 🚀 快速开始
 
-**环境要求**：DSH 0.2.0-rc.2（当前验证版本）。运行 `dsh --version` 查看本机版本。
+**环境要求**：DSH 0.2.2-rc.1（当前验证版本，`engines.dsh` 覆盖 0.2.x）。运行 `dsh --version` 查看本机版本。
 
 **1. 安装插件**
 
@@ -154,9 +154,11 @@ HTTPS_PROXY=http://127.0.0.1:7897
 
 三种调度策略，设置页一键切换：
 
-- **智能均衡（推荐）** — 自动挑选剩余额度最健康的账号
+- **智能均衡（推荐）** — 按各账号剩余额度做平滑加权轮询，请求在撞 429 之前就分散到多个账号；额度见底的账号自动降权
 - **主备切换** — 固定主账号，额度耗尽自动切备用
 - **手动指定** — 锁定单一账号，用于调试或专跑
+
+设置页账号列表支持下拉选择单个账号查看额度、重置时间与在线状态；多账号时默认展示全部卡片。模型目录按账号实际返回的 `fetchAvailableModels` 取并集：某账号没有的模型不会出现在选择器里，也不会被调度到该账号。
 
 日常操作走对话命令：
 
@@ -196,7 +198,7 @@ HTTPS_PROXY=http://127.0.0.1:7897
   - 经 `/antigravity/api/config` 在 accounts.json 里配置 `visionEnabled: false`
 
   开关同时控制贴图准入与自动转述；关闭后，贴图行为恢复宿主原样。`visionModel` 指定代看模型；留空则自动挑选，设置页卡片可直接选择。
-- **已知依赖**：自动转述依赖宿主 `llm/stream` 事件、贴图准入依赖 `resolveModelInfo` 行为，宿主大版本升级后若贴图行为异常，需重审本节（当前在 DSH 0.2.0-rc.2 验证）。
+- **已知依赖**：自动转述依赖宿主 `agent/pre-step` 事件、贴图准入依赖 `resolveModelInfo` 行为，宿主大版本升级后若贴图行为异常，需重审本节（当前在 DSH 0.2.2-rc.1 验证）。
 - **排障**：贴图后模型仍收到占位文本时，先运行 `/antigravity-doctor`，查看 `visionBridge` / `visionShim` 两行。两行显示 `registered` + `installed` 即为正常。服务端日志里，`[Antigravity Pool Vision]` 前缀的行记录桥的每一步判定（请求进入、模型判定、改写结果或放行原因）。贴图后一条前缀行都没有，说明事件没有到达桥。
 
 ## 🤖 模型一览
@@ -210,10 +212,13 @@ HTTPS_PROXY=http://127.0.0.1:7897
 
 | 模型 | 额度池 |
 |---|---|
-| Gemini 3.8 / 3.7 / 3.6 / 3.5 Flash | Gemini |
+| Gemini 4 Argon · Gemini 3.8 / 3.7 / 3.6 / 3.5 Flash | Gemini |
+| Gemini 3.5 Flash Lite · Gemini 3.1 Flash Lite | Gemini |
 | Gemini 3.1 Pro · Gemini 3.1 Flash Image（生图） | Gemini |
 | Gemini 3 Flash · Gemini 2.5 Pro / Flash | Gemini |
 | Claude Opus 4.6 · Claude Sonnet 4.6 · GPT-OSS 120B | Claude & GPT |
+
+以上是服务端曾返回过的模型族，实际可选列表以你的账号实时返回为准：插件只展示 `fetchAvailableModels` 里存在且未 `disabled` 的模型，并按思考档位（low / medium / high）折叠为每个模型族一个条目。多账号启用不同模型时取并集，请求只会调度到确实拥有该模型的账号。
 
 同一额度池内共享每周与 5 小时额度；额度按 token 成本比例消耗，越重的模型消耗越快。
 

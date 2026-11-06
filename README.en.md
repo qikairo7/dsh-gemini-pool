@@ -88,7 +88,7 @@ The relay has one real advantage: **bans hit the operator's accounts, yours stay
 
 ## 🚀 Quick Start
 
-**Requirements**: DSH 0.2.0-rc.2, the version this release is tested against (`dsh --version` to check yours).
+**Requirements**: DSH 0.2.2-rc.1, the version this release is tested against (`engines.dsh` covers the 0.2.x line). Run `dsh --version` to check yours.
 
 **1. Install the plugin**
 
@@ -154,9 +154,11 @@ HTTPS_PROXY=http://127.0.0.1:7897
 
 Three strategies, one click to switch in Settings:
 
-- **Smart balancing (recommended)**: picks the account with the healthiest remaining quota
+- **Smart balancing (recommended)**: smooth weighted round-robin by remaining quota, so requests spread before any account hits 429; drained accounts lose weight automatically
 - **Primary & backup**: fixed primary account, automatic switch when its quota runs out
 - **Manual**: lock to one account for debugging or dedicated runs
+
+The account list has a dropdown to inspect one account's quota, reset time, and status; with several accounts the cards stay visible. The model catalog is the union of each account's live `fetchAvailableModels` reply: a model an account does not have is neither offered nor routed to that account.
 
 Day-to-day operations run as chat commands:
 
@@ -191,7 +193,7 @@ When the main model cannot see images (e.g. a text-only model), a Gemini model f
 
 - **Data flow**: images are processed through Google accounts in the pool, sharing quota with chat and image generation.
 - **On by default**. To turn it off (any one of these): set the environment variable `ANTIGRAVITY_VISION_ENABLED=false`; or toggle it off in the Settings · Vision Bypass card; or set `visionEnabled: false` in accounts.json via `/antigravity/api/config`. The switch governs both image admission and automatic description; with it off, pasting behaves exactly as the host does out of the box. `visionModel` picks the describing model — leave it empty for automatic selection, or pick one in the Settings card.
-- **Known dependency**: automatic description relies on the host's `llm/stream` event and image admission on `resolveModelInfo`. If pasting images misbehaves after a major host upgrade, revisit this section (verified against DSH 0.2.0-rc.2).
+- **Known dependency**: automatic description relies on the host's `agent/pre-step` event and image admission on `resolveModelInfo`. If pasting images misbehaves after a major host upgrade, revisit this section (verified against DSH 0.2.2-rc.1).
 - **Troubleshooting**: if the model still receives a placeholder after pasting an image, run `/antigravity-doctor` and check the `visionBridge` / `visionShim` lines (`registered` + `installed` is the healthy state). Server log lines prefixed `[Antigravity Pool Vision]` record every bridge decision (request entry, model gate, rewrite result or passthrough reason); zero prefixed lines after a paste means the event never reached the bridge.
 
 ## 🤖 Models
@@ -205,10 +207,13 @@ Tick a model in Settings to enable it. Enabled models float to the top, each sho
 
 | Model | Quota pool |
 |---|---|
-| Gemini 3.8 / 3.7 / 3.6 / 3.5 Flash | Gemini |
+| Gemini 4 Argon · Gemini 3.8 / 3.7 / 3.6 / 3.5 Flash | Gemini |
+| Gemini 3.5 Flash Lite · Gemini 3.1 Flash Lite | Gemini |
 | Gemini 3.1 Pro · Gemini 3.1 Flash Image (image gen) | Gemini |
 | Gemini 3 Flash · Gemini 2.5 Pro / Flash | Gemini |
 | Claude Opus 4.6 · Claude Sonnet 4.6 · GPT-OSS 120B | Claude & GPT |
+
+The list above names model families Antigravity has offered; the real selector is whatever your accounts return. The plugin only offers models present and not `disabled` in `fetchAvailableModels`, folds thinking levels (low / medium / high) into one entry per family, and unions accounts — a request only goes to an account that actually lists the model.
 
 Models in the same pool share the weekly and 5-hour quotas. Quota drains in proportion to token cost, so heavier models run out faster.
 
