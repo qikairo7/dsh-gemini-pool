@@ -132,11 +132,17 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 | DSH | `0.2.2-rc.1` 已验证；`engines.dsh` 为 `>=0.2.0-rc.2 <0.3.0` |
 | Node.js | `>=24.9`（与 DSH 0.2.2 的最低要求一致） |
 | 分发方式 | GitHub Release / `dsh plugin add github:...`；不依赖 npm registry |
-| 当前版本 | `v0.9.1`（见 [Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.1)） |
+| 当前版本 | `v0.9.2`（见 [Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.2)） |
 
 从 `v0.8.x` 升级：重启 DSH 后打开一次设置页刷新额度，旧的静态模型列表会被账号实时目录替换；已勾选但账号不提供的模型会自动从选择器移除。
 
 ### 近期版本
+
+**v0.9.2 — gemini-4 可见性与 429 文案（#21）**
+
+- 默认 hub 版本 `2.9.1` → `3.0.0`：Google 按 User-Agent 里的 hub 版本做模型门限（≥ `2.99.0` 才返回 gemini-4 目录），升级后同账号即可看到 `gemini-4-argon` / `gemini-4-hydrogen`。
+- 429 文案区分「额度耗尽」与「短窗限流」：`Resource has been exhausted (e.g. check quota)` 这类短窗限流不再误报为「Quota reached」，并尽量从错误体解析 `retryDelay` 给出重试时间。
+- 多账号目录合并时，某账号缺失档位的填充默认值不再遮住另一账号真实存在的档位；错误诊断附带完整 runtime 候选链，消除「matched 与 runtimeModel 不一致」的误读。
 
 **v0.9.1 — 协议与调度加固**
 
@@ -176,6 +182,15 @@ HTTPS_PROXY=http://127.0.0.1:7897
 - 回环地址（设置页 GUI、OAuth 回调用的本地端口）由宿主自动绕过，不需要写 `NO_PROXY`。
 - 自检：登录或额度刷新失败时，如果报错里是 `UND_ERR_CONNECT_TIMEOUT` 或 `fetch failed`，基本可以断定这条路没走代理。把 `https://oauth2.googleapis.com/token` 直连与走代理各请求一次即可确认（走通会返回 `400`，因为没带请求体）。
 - 不需要、也不建议给插件加代理代码：宿主 Node 里 `import('undici')` 不可用，而进程内 `fetch` 会自动跟随宿主装的代理。
+
+## 🔧 环境变量覆盖
+
+插件的环境变量支持两种前缀：`ANTIGRAVITY_*` 与 `NOAGY_*`（同名时 `ANTIGRAVITY_*` 优先）。写在宿主 harness home 的 `.env` 里即可，改完需重启 DSH。
+
+| 变量 | 默认值 | 作用 |
+|---|---|---|
+| `ANTIGRAVITY_VERSION` | `3.0.0` | 请求 User-Agent 里的 hub 版本（`antigravity/hub/<version>`）。Google 以 `2.99.0` 为门限决定 `fetchAvailableModels` 是否返回 gemini-4 目录（见 #21 实测矩阵），**没有特殊原因不要降到 2.99.0 以下** |
+| `ANTIGRAVITY_USER_AGENT` | `antigravity/hub/<版本> <os>/<arch>` | 整串覆盖 User-Agent（连同版本号） |
 
 ## 💧 账号池与调度
 

@@ -124,6 +124,31 @@ test("pool union keeps models available on only one account", () => {
   assert.ok(ids.includes("gemini-4-argon"));
 });
 
+test("merged runtime map prefers a real variant over a filled default (issue #21)", () => {
+  // Account A lists only the high variant, so familyRuntime fills its other
+  // effort slots with the high id. Account B lists the full set. The union
+  // must route medium/low to B's real ids, not A's high fill.
+  const accountA = buildCatalogFromRawModels(
+    rawModelsFromAvailable(availableModels({ "gemini-4-hydrogen-high": { name: "Gemini 4 Hydrogen (High)" } })),
+  );
+  const accountB = buildCatalogFromRawModels(
+    rawModelsFromAvailable(
+      availableModels({
+        "gemini-4-hydrogen-low": { name: "Gemini 4 Hydrogen (Low)" },
+        "gemini-4-hydrogen-medium": { name: "Gemini 4 Hydrogen (Medium)" },
+        "gemini-4-hydrogen-high": { name: "Gemini 4 Hydrogen (High)" },
+      }),
+    ),
+  );
+  const union = mergeCatalogModels([accountA, accountB]);
+  const model = union.find((entry) => entry.id === "gemini-4-hydrogen");
+  assert.ok(model);
+  assert.deepEqual(model.reasoningEfforts, ["low", "medium", "high"]);
+  assert.equal(runtimeModelForEffort(model, "medium"), "gemini-4-hydrogen-medium");
+  assert.equal(runtimeModelForEffort(model, "low"), "gemini-4-hydrogen-low");
+  assert.equal(runtimeModelForEffort(model, "high"), "gemini-4-hydrogen-high");
+});
+
 test("family splitting treats tiered as the family default", () => {
   assert.deepEqual(splitRuntimeModelId("gemini-3.8-flash-tiered"), {
     family: "gemini-3.8-flash",
