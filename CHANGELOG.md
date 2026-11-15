@@ -2,6 +2,18 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/zh-CN/)。
 
+## v0.9.2 — 2026-11-16
+
+### Fixed
+- **gemini-4 目录不可见（#21）**：`antigravityVersion()` 默认值 `2.9.1` → `3.0.0`。Google 按请求 User-Agent 里的 hub 版本对 `fetchAvailableModels` 做模型门限：实测矩阵显示 `< 2.99.0` 时两个 endpoint 都只返回 23 个模型的旧目录，`gemini-4-argon` / `gemini-4-hydrogen` 整族不可见；`2.99.0` / `3.0.0` 起 cloudcode-pa 返回 26 个（含 argon）、daily 通道返回 31 个（含 argon + hydrogen）。升级后同账号目录自动出现 gemini-4，无需改其它配置。`ANTIGRAVITY_VERSION` / `NOAGY_VERSION` 覆盖语义不变，README（中英）新增环境变量小节。
+- **429 文案把短窗限流误报成额度耗尽（#21 顺带发现 2）**：`friendlyAntigravityError()` 的 429 分支此前用 `/quota/i` 判定，而 Google 短窗限流的通用报文 `Resource has been exhausted (e.g. check quota)` 同样含 "quota"，导致剩余额度还有 97% 时也打印「Quota reached」。现在只有报文明确表述额度用尽（`individual quota` / `quota reached|exceeded|used up` / `quota … exhausted` / `exceeded … quota`）才报额度耗尽；短窗限流报「Rate limited by Antigravity (short window, quota not exhausted)」，并从错误体的 RetryInfo `retryDelay`（`"retryDelay":"17s"`）解析出建议重试时间（无 `Resets in` 窗口时的兜底）。冷却/退避行为不变：短窗限流下账号短暂冷却本来就是正确处置。
+- **多账号目录合并的档位遮蔽（#21 顺带发现 1 的核实结论之一）**：`familyRuntime()` 会给账号未列出的档位填入族默认 id（如只列了 high 的账号，medium 槽位填 high）。`mergeCatalogModels()` 合并时先到者的填充值会遮住后来者真实存在的档位（A 账号的 medium→high 遮住 B 账号的 medium→`gemini-4-hydrogen-medium`），请求 medium 实际打到 high。现在合并时后到的「后缀与档位一致」的真实 id 会替换掉「后缀不一致」的填充值；单账号路径本就逐档映射、不受影响。
+- **错误诊断的 matched/runtimeModel 口径不一（#21 顺带发现 1）**：`matchedModelDebug` 是进程级单例，记录的是首个 runtime 候选的动态探测结果；而错误行里的 `runtimeModel` 是 404/5xx 重试链走完后的最后一个候选（medium 请求的候选链 `[medium, default-high, low]` 终点恰为 low），两者描述不同查找，正是 #21 里「请求 medium、matched 是 high、runtimeModel 是 low」的来源。现在错误诊断附带 `candidates=` 完整候选链，重试落点一目了然；effort→runtime 映射本身经核实无「三档都落 high」的问题。
+
+### 验证
+- `npm run check` 122/122（v0.9.1 基线 119 项全保留 + 新增 3 项：目录合并「真实档位不被填充默认遮蔽」、短窗 429 文案（含 retryDelay 与 candidates 断言）、individual quota 429 文案）。
+- 请求信封测试补充默认 hub 版本 ≥ 2.99.0 的门限回归断言（隔离 `ANTIGRAVITY_VERSION` / `NOAGY_VERSION` 环境变量后断言），防止未来无意降级再次隐藏 gemini-4。
+
 ## v0.9.1 — 2026-11-06
 
 ### Fixed

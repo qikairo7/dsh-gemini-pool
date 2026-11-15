@@ -132,11 +132,17 @@ If your DSH does not support `dsh plugin add`, copy the package into `$DSH_HOME/
 | DSH | `0.2.2-rc.1` verified; `engines.dsh` is `>=0.2.0-rc.2 <0.3.0` |
 | Node.js | `>=24.9` (same minimum as DSH 0.2.2) |
 | Distribution | GitHub Release / `dsh plugin add github:...`; no npm registry dependency |
-| Current version | `v0.9.1` ([Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.1)) |
+| Current version | `v0.9.2` ([Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.2)) |
 
 Upgrading from `v0.8.x`: restart DSH and open Settings once to refresh quota. The old static model list is replaced by the live per-account catalog; models you had enabled but no account provides are removed automatically.
 
 ### Recent versions
+
+**v0.9.2 — gemini-4 visibility and 429 wording (#21)**
+
+- Default hub version `2.9.1` → `3.0.0`: Google gates the catalog behind the hub version in the User-Agent (`>= 2.99.0` unlocks the gemini-4 families), so `gemini-4-argon` / `gemini-4-hydrogen` now appear for the same account.
+- The 429 message now distinguishes a spent quota from a short-window rate limit: bodies like `Resource has been exhausted (e.g. check quota)` are no longer reported as "Quota reached", and `retryDelay` from the error body is surfaced as the retry time.
+- Multi-account catalog merging no longer lets one account's filled-in default effort shadow another account's real variant; request errors carry the full runtime candidate chain, removing the matched-vs-runtimeModel misread.
 
 **v0.9.1 — protocol and scheduling hardening**
 
@@ -176,6 +182,15 @@ HTTPS_PROXY=http://127.0.0.1:7897
 - Loopback (the settings GUI and the OAuth callback's local port) is bypassed by the host automatically; `NO_PROXY` is unnecessary.
 - Self-check: if login or quota refresh fails with `UND_ERR_CONNECT_TIMEOUT` or `fetch failed`, this path is almost certainly not proxied. Request `https://oauth2.googleapis.com/token` both directly and through the proxy to confirm (a proxied reach returns `400`, since the request body is missing).
 - Do not add proxy code to the plugin: `import('undici')` is unavailable in the host's Node, and an in-process `fetch` follows the host's proxy automatically.
+
+## 🔧 Environment variable overrides
+
+The plugin accepts both `ANTIGRAVITY_*` and `NOAGY_*` prefixes (`ANTIGRAVITY_*` wins on a name clash). Put them in the harness home's `.env` and restart DSH after editing.
+
+| Variable | Default | Effect |
+|---|---|---|
+| `ANTIGRAVITY_VERSION` | `3.0.0` | Hub version in the request User-Agent (`antigravity/hub/<version>`). Google gates `fetchAvailableModels` at `2.99.0` before the gemini-4 catalog is returned (see the #21 matrix) — **do not lower it below 2.99.0** without a specific reason |
+| `ANTIGRAVITY_USER_AGENT` | `antigravity/hub/<version> <os>/<arch>` | Overrides the whole User-Agent string (version included) |
 
 ## 💧 Account Pool & Scheduling
 

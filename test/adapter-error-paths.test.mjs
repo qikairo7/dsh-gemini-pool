@@ -145,6 +145,14 @@ test("successful stream clears cooldown window without resetting failureCount", 
 
 test("request envelope uses Antigravity-native requestId, sessionId and user-agent", async () => {
   const { manager, cleanup } = await createTempManager();
+  // Scrub ambient overrides so the version-gate assertion below always tests
+  // the built-in default.
+  const savedEnv = {
+    ANTIGRAVITY_VERSION: process.env.ANTIGRAVITY_VERSION,
+    NOAGY_VERSION: process.env.NOAGY_VERSION,
+  };
+  delete process.env.ANTIGRAVITY_VERSION;
+  delete process.env.NOAGY_VERSION;
   try {
     await addAccount(manager, "identity@example.com");
     let streamInit;
@@ -171,7 +179,19 @@ test("request envelope uses Antigravity-native requestId, sessionId and user-age
     assert.equal(streamBody.userAgent, "antigravity");
     assert.match(streamBody.request.sessionId, /^-\d+$/);
     assert.match(streamInit.headers["User-Agent"], /^antigravity\/hub\/\d+\.\d+\.\d+ /);
+    // Google gates the gemini-4 catalog behind hub >= 2.99.0 (issue #21): the
+    // shipped default must stay above that gate.
+    const hub = streamInit.headers["User-Agent"].match(/^antigravity\/hub\/(\d+)\.(\d+)\.\d+ /);
+    assert.ok(hub, "user-agent must carry a hub version");
+    assert.ok(
+      Number(hub[1]) > 2 || (Number(hub[1]) === 2 && Number(hub[2]) >= 99),
+      `default hub version must clear Google's 2.99.0 model gate (got ${hub[1]}.${hub[2]})`,
+    );
   } finally {
+    for (const [key, value] of Object.entries(savedEnv)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
     await cleanup();
   }
 });
@@ -286,6 +306,81 @@ test("mid-stream 429 after a chunk still marks cooldown but does not failover", 
     assert.equal(first.failureCount, 1, "mid-stream 429 must accumulate a failure");
     assert.ok(first.cooldownRemainingMs > 0, "mid-stream 429 must open a cooldown window");
     assert.equal(streamRequests, 1, "must not fail over to the second account mid-stream");
+  } finally {
+    await cleanup();
+  }
+});
+
+// Issue #21: Google's generic short-window 429 body also says "check quota".
+// The user-facing message must not report it as quota exhaustion, and must
+// surface the RetryInfo delay when the body carries one.
+test("short-window 429 reads as rate limited, not quota reached (issue #21)", async () => {
+  const { manager, cleanup } = await createTempManager();
+  try {
+    await addAccount(manager, "bursty@example.com");
+    await withStubbedFetch(
+      (url) =>
+        isDiscoveryRequest(url)
+          ? discoveryResponse()
+          : errorResponse(
+              429,
+              JSON.stringify({
+                error: {
+                  code: 429,
+                  message: "Resource has been exhausted (e.g. check quota).",
+                  status: "RESOURCE_EXHAUSTED",
+                  details: [{ "@type": "type.googleapis.com/google.rpc.RetryInfo", retryDelay: "17s" }],
+                },
+              }),
+            ),
+      async () => {
+        const adapter = new AntigravityPoolAdapter(manager, modelSettings(), () => undefined);
+        await assert.rejects(async () => {
+          for await (const _chunk of adapter.stream({
+            model: "gemini-3.8-flash",
+            messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+          })) {
+            void _chunk;
+          }
+        }, (error) => {
+          assert.match(error.message, /Rate limited by Antigravity \(short window, quota not exhausted\)\. Retry after 17s\./);
+          assert.doesNotMatch(error.message, /Quota reached/);
+          // The retry chain must be visible so the final runtimeModel is not
+          // misread as the requested effort being misrouted.
+          assert.match(error.message, /candidates=[^,]+/);
+          return true;
+        });
+      },
+    );
+  } finally {
+    await cleanup();
+  }
+});
+
+test("individual-quota 429 still reports quota reached with its reset window", async () => {
+  const { manager, cleanup } = await createTempManager();
+  try {
+    await addAccount(manager, "spent@example.com");
+    await withStubbedFetch(
+      (url) =>
+        isDiscoveryRequest(url)
+          ? discoveryResponse()
+          : errorResponse(
+              429,
+              JSON.stringify({ error: { code: 429, message: "Individual quota reached. Resets in 4h" } }),
+            ),
+      async () => {
+        const adapter = new AntigravityPoolAdapter(manager, modelSettings(), () => undefined);
+        await assert.rejects(async () => {
+          for await (const _chunk of adapter.stream({
+            model: "gemini-3.8-flash",
+            messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+          })) {
+            void _chunk;
+          }
+        }, /Quota reached\. Please wait 4h\./);
+      },
+    );
   } finally {
     await cleanup();
   }
