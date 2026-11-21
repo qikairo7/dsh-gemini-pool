@@ -132,13 +132,18 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 | DSH | `0.2.2-rc.5` 已验证；`engines.dsh` 为 `>=0.2.0-rc.2 <0.3.0` |
 | Node.js | `>=24.9`（与 DSH 0.2.2 的最低要求一致） |
 | 分发方式 | GitHub Release / `dsh plugin add github:...`；不依赖 npm registry |
-| 当前版本 | `v0.9.2`（见 [Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.2)） |
+| 当前版本 | `v0.9.3`（见 [Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.3)） |
 
 当前验证基线是 `0.2.2-rc.5`。`engines.dsh` 范围内更老的宿主仍按兼容路径加载，但不再逐一验证。
 
 从 `v0.8.x` 升级：重启 DSH 后打开一次设置页刷新额度，旧的静态模型列表会被账号实时目录替换；已勾选但账号不提供的模型会自动从选择器移除。
 
 ### 近期版本
+
+**v0.9.3 — DSH 0.2.2-rc.5 兼容基线**
+
+- devDependencies 中的 5 个 `@deepseek-ai/dsh-*` 包升到 `0.2.2-rc.5`，并补上 rc.5 新增的 peer 依赖 `@deepseek-ai/dsh-error`。
+- 当前验证版本、兼容性矩阵与视觉旁路说明同步为 `0.2.2-rc.5`。运行时代码未改动。
 
 **v0.9.2 — gemini-4 可见性与 429 文案（#21）**
 

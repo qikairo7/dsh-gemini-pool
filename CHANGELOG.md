@@ -2,7 +2,7 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/zh-CN/)。
 
-## [Unreleased] — 2026-11-21
+## v0.9.3 — 2026-11-21
 
 ### Changed
 - **DSH 兼容基线升级到 0.2.2-rc.5**：devDependencies 中的 5 个 `@deepseek-ai/dsh-*` 包从 `0.2.2-rc.1` 升到 `0.2.2-rc.5`，`package-lock.json` 同步更新。rc.5 的 `dsh-llm` 把 `HarnessError` 移到 `@deepseek-ai/dsh-error`，新增该包为 peer 依赖。插件不直接引用它，但把它加进 devDependencies，这样本地用 `--legacy-peer-deps` 安装也能跑测试。

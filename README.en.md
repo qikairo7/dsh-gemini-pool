@@ -132,13 +132,18 @@ If your DSH does not support `dsh plugin add`, copy the package into `$DSH_HOME/
 | DSH | `0.2.2-rc.5` verified; `engines.dsh` is `>=0.2.0-rc.2 <0.3.0` |
 | Node.js | `>=24.9` (same minimum as DSH 0.2.2) |
 | Distribution | GitHub Release / `dsh plugin add github:...`; no npm registry dependency |
-| Current version | `v0.9.2` ([Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.2)) |
+| Current version | `v0.9.3` ([Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.3)) |
 
 The current verification baseline is `0.2.2-rc.5`. Older hosts within `engines.dsh` still load through the compatibility paths, but are no longer verified individually.
 
 Upgrading from `v0.8.x`: restart DSH and open Settings once to refresh quota. The old static model list is replaced by the live per-account catalog; models you had enabled but no account provides are removed automatically.
 
 ### Recent versions
+
+**v0.9.3 — DSH 0.2.2-rc.5 baseline**
+
+- Bump the five `@deepseek-ai/dsh-*` devDependencies to `0.2.2-rc.5` and add the new peer `@deepseek-ai/dsh-error`.
+- Requirements, the compatibility table, and the vision section now name `0.2.2-rc.5` as the verified baseline. Runtime code is unchanged.
 
 **v0.9.2 — gemini-4 visibility and 429 wording (#21)**
 
