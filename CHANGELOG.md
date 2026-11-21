@@ -2,6 +2,17 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，版本号遵循 [Semantic Versioning](https://semver.org/zh-CN/)。
 
+## [Unreleased] — 2026-11-21
+
+### Changed
+- **DSH 兼容基线升级到 0.2.2-rc.5**：devDependencies 中的 5 个 `@deepseek-ai/dsh-*` 包从 `0.2.2-rc.1` 升到 `0.2.2-rc.5`，`package-lock.json` 同步更新。rc.5 的 `dsh-llm` 把 `HarnessError` 移到 `@deepseek-ai/dsh-error`，新增该包为 peer 依赖。插件不直接引用它，但把它加进 devDependencies，这样本地用 `--legacy-peer-deps` 安装也能跑测试。
+- README（中英）的「环境要求」「兼容性矩阵」与视觉旁路「已知依赖」同步为当前验证版本 `0.2.2-rc.5`。v0.9.0、v0.9.1 和 v0.9.2 的历史条目保留原来的版本口径。
+
+### 验证
+- `npm run check` 122/122 全绿（v0.9.2 的 122 项基线全部保留）。
+- 对照宿主仓库 `dsh-v0.2.2-rc.1..dsh-v0.2.2-rc.5` 的源码差异：`dsh-llm` 的改动集中在错误码类型、工具历史投影、User-Agent 后缀和重试码配置，没有触及本插件用的图片 offload 契约、`attributionHeaders` 与 `LlmError` 运行时行为。插件代码零修改。
+- 安装沿用 CI 的 `npm install --no-audit --no-fund`。此前只加 rc.5 依赖时，本机用 `--legacy-peer-deps` 安装会因为 peer `dsh-error` 缺失而报 `ERR_MODULE_NOT_FOUND`，现已用显式 devDependency 覆盖。
+
 ## v0.9.2 — 2026-11-16
 
 ### Fixed

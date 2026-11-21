@@ -88,7 +88,7 @@ The relay has one real advantage: **bans hit the operator's accounts, yours stay
 
 ## 🚀 Quick Start
 
-**Requirements**: DSH 0.2.2-rc.1, the version this release is tested against. Run `dsh --version` to check yours; see "🧩 Compatibility & versions" for the full range.
+**Requirements**: DSH 0.2.2-rc.5, the version this release is tested against. Run `dsh --version` to check yours; see "🧩 Compatibility & versions" for the full range.
 
 **1. Install the plugin**
 
@@ -129,10 +129,12 @@ If your DSH does not support `dsh plugin add`, copy the package into `$DSH_HOME/
 
 | Item | Requirement |
 |---|---|
-| DSH | `0.2.2-rc.1` verified; `engines.dsh` is `>=0.2.0-rc.2 <0.3.0` |
+| DSH | `0.2.2-rc.5` verified; `engines.dsh` is `>=0.2.0-rc.2 <0.3.0` |
 | Node.js | `>=24.9` (same minimum as DSH 0.2.2) |
 | Distribution | GitHub Release / `dsh plugin add github:...`; no npm registry dependency |
 | Current version | `v0.9.2` ([Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.2)) |
+
+The current verification baseline is `0.2.2-rc.5`. Older hosts within `engines.dsh` still load through the compatibility paths, but are no longer verified individually.
 
 Upgrading from `v0.8.x`: restart DSH and open Settings once to refresh quota. The old static model list is replaced by the live per-account catalog; models you had enabled but no account provides are removed automatically.
 
@@ -235,7 +237,7 @@ When the main model cannot see images (e.g. a text-only model), a Gemini model f
 
 - **Data flow**: images are processed through Google accounts in the pool, sharing quota with chat and image generation.
 - **On by default**. To turn it off (any one of these): set the environment variable `ANTIGRAVITY_VISION_ENABLED=false`; or toggle it off in the Settings · Vision Bypass card; or set `visionEnabled: false` in accounts.json via `/antigravity/api/config`. The switch governs both image admission and automatic description; with it off, pasting behaves exactly as the host does out of the box. `visionModel` picks the describing model — leave it empty for automatic selection, or pick one in the Settings card.
-- **Known dependency**: automatic description relies on the host's `agent/pre-step` event and image admission on `resolveModelInfo`. If pasting images misbehaves after a major host upgrade, revisit this section (verified against DSH 0.2.2-rc.1).
+- **Known dependency**: automatic description relies on the host's `agent/pre-step` event and image admission on `resolveModelInfo`. If pasting images misbehaves after a major host upgrade, revisit this section (verified against DSH 0.2.2-rc.5).
 - **Troubleshooting**: if the model still receives a placeholder after pasting an image, run `/antigravity-doctor` and check the `visionBridge` / `visionShim` lines (`registered` + `installed` is the healthy state). Server log lines prefixed `[Antigravity Pool Vision]` record every bridge decision (request entry, model gate, rewrite result or passthrough reason); zero prefixed lines after a paste means the event never reached the bridge.
 
 ## 🤖 Model families

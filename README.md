@@ -88,7 +88,7 @@ Gemini 的强项正好落在编程场景上：**多模态**看图、**前端与 
 
 ## 🚀 快速开始
 
-**环境要求**：DSH 0.2.2-rc.1（当前验证版本）。运行 `dsh --version` 查看本机版本；完整范围见「🧩 兼容性与版本」。
+**环境要求**：DSH 0.2.2-rc.5（当前验证版本）。运行 `dsh --version` 查看本机版本；完整范围见「🧩 兼容性与版本」。
 
 **1. 安装插件**
 
@@ -129,10 +129,12 @@ dsh plugin --profile web add ./dist/dsh-gemini-pool-*.tgz
 
 | 项目 | 要求 |
 |---|---|
-| DSH | `0.2.2-rc.1` 已验证；`engines.dsh` 为 `>=0.2.0-rc.2 <0.3.0` |
+| DSH | `0.2.2-rc.5` 已验证；`engines.dsh` 为 `>=0.2.0-rc.2 <0.3.0` |
 | Node.js | `>=24.9`（与 DSH 0.2.2 的最低要求一致） |
 | 分发方式 | GitHub Release / `dsh plugin add github:...`；不依赖 npm registry |
 | 当前版本 | `v0.9.2`（见 [Release](https://github.com/qikairo7/dsh-gemini-pool/releases/tag/v0.9.2)） |
+
+当前验证基线是 `0.2.2-rc.5`。`engines.dsh` 范围内更老的宿主仍按兼容路径加载，但不再逐一验证。
 
 从 `v0.8.x` 升级：重启 DSH 后打开一次设置页刷新额度，旧的静态模型列表会被账号实时目录替换；已勾选但账号不提供的模型会自动从选择器移除。
 
@@ -240,7 +242,7 @@ HTTPS_PROXY=http://127.0.0.1:7897
   - 经 `/antigravity/api/config` 在 accounts.json 里配置 `visionEnabled: false`
 
   开关同时控制贴图准入与自动转述；关闭后，贴图行为恢复宿主原样。`visionModel` 指定代看模型；留空则自动挑选，设置页卡片可直接选择。
-- **已知依赖**：自动转述依赖宿主 `agent/pre-step` 事件、贴图准入依赖 `resolveModelInfo` 行为，宿主大版本升级后若贴图行为异常，需重审本节（当前在 DSH 0.2.2-rc.1 验证）。
+- **已知依赖**：自动转述依赖宿主 `agent/pre-step` 事件、贴图准入依赖 `resolveModelInfo` 行为，宿主大版本升级后若贴图行为异常，需重审本节（当前在 DSH 0.2.2-rc.5 验证）。
 - **排障**：贴图后模型仍收到占位文本时，先运行 `/antigravity-doctor`，查看 `visionBridge` / `visionShim` 两行。两行显示 `registered` + `installed` 即为正常。服务端日志里，`[Antigravity Pool Vision]` 前缀的行记录桥的每一步判定（请求进入、模型判定、改写结果或放行原因）。贴图后一条前缀行都没有，说明事件没有到达桥。
 
 ## 🤖 模型族一览
